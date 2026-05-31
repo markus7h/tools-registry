@@ -1,0 +1,22 @@
+name: pdf_to_text
+description: Extrahiert reinen Text aus einer PDF-Datei via pdftotext (poppler). Schreibt extracted.txt ins run_dir.
+exec: ./run.sh
+inputs:
+  pdf_path:
+    type: string
+    description: Absoluter Pfad zur Eingabe-PDF.
+    required: true
+  layout:
+    type: boolean
+    description: Wenn true, Layout-Modus von pdftotext (-layout). Standard false (Fließtext).
+    required: false
+outputs:
+  text_file:
+    type: string
+    description: Absoluter Pfad zur extrahierten Textdatei im run_dir.
+  char_count:
+    type: number
+    description: Anzahl Zeichen im extrahierten Text.
+requires:
+  - pdftotext
+ai_rem_entity: tool_pdf_to_text

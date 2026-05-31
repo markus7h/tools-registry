@@ -1,0 +1,13 @@
+name: echo
+description: Smoke-Test. Schreibt die übergebene Nachricht ins Run-Dir und gibt den Pfad zurück.
+exec: ./run.sh
+inputs:
+  msg:
+    type: string
+    description: Beliebige Nachricht.
+    required: true
+outputs:
+  text_file:
+    type: string
+    description: Pfad zur Datei mit der Nachricht (relativ zum run_dir).
+ai_rem_entity: tool_echo

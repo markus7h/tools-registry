@@ -1,0 +1,20 @@
+name: head_lines
+description: Liest die ersten N Zeilen einer Textdatei und schreibt sie ins run_dir. Nützlich als Preview-Step in Pipelines.
+exec: ./run.sh
+inputs:
+  text_file:
+    type: string
+    description: Absoluter Pfad zur Eingabe-Textdatei.
+    required: true
+  n:
+    type: integer
+    description: Anzahl Zeilen (Default 20).
+    required: false
+outputs:
+  preview_file:
+    type: string
+    description: Pfad zur Datei mit den ersten N Zeilen.
+  preview_text:
+    type: string
+    description: Die ersten N Zeilen als String (inline, kann groß werden — Pipelines sollten bevorzugt preview_file verwenden).
+ai_rem_entity: tool_head_lines

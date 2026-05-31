@@ -1,0 +1,44 @@
+import { mkdir, readFile, writeFile, stat } from "node:fs/promises";
+import { join } from "node:path";
+import { randomUUID } from "node:crypto";
+
+const RUNS_ROOT = process.env.TOOLS_MCP_RUNS_DIR ?? "/tmp/tools-runs";
+
+export interface RunContext {
+  runId: string;
+  dir: string;
+}
+
+export async function ensureRun(runId?: string): Promise<RunContext> {
+  const id = runId && runId !== "auto" ? runId : randomUUID();
+  const dir = join(RUNS_ROOT, id);
+  await mkdir(dir, { recursive: true });
+  return { runId: id, dir };
+}
+
+/**
+ * Liest outputs.json aus dem run_dir. Scripts dürfen sie schreiben um
+ * benannte Output-Artefakte (Pfade, IDs, Zahlen) deklarativ zurückzugeben.
+ * Pfade in outputs.json sollten relativ zum run_dir oder absolut sein.
+ */
+export async function readOutputs(runDir: string): Promise<Record<string, unknown> | undefined> {
+  const path = join(runDir, "outputs.json");
+  try {
+    await stat(path);
+  } catch {
+    return undefined;
+  }
+  const raw = await readFile(path, "utf8");
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    throw new Error(`outputs.json in ${runDir} ist kein gültiges JSON: ${(err as Error).message}`);
+  }
+}
+
+/**
+ * Schreibt outputs.json — vom Pipeline-Runner und ggf. Helper-CLIs genutzt.
+ */
+export async function writeOutputs(runDir: string, outputs: Record<string, unknown>): Promise<void> {
+  await writeFile(join(runDir, "outputs.json"), JSON.stringify(outputs, null, 2), "utf8");
+}

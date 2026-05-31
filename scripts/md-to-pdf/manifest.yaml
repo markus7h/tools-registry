@@ -1,0 +1,28 @@
+name: md_to_pdf
+description: Konvertiert eine Markdown-Datei in eine formatierte PDF via Python markdown + WeasyPrint. Designs `collana` (grünes b-imtec, default) und `magicM` (LaTeX-Serif, Seitennummerierung). Gibt den PDF-Pfad zurück.
+exec: ./run.sh
+inputs:
+  md_path:
+    type: string
+    description: Absoluter Pfad zur Eingabe-.md-Datei.
+    required: true
+  output_path:
+    type: string
+    description: "Absoluter Pfad der Ausgabe-PDF. Standard: gleicher Ordner wie md_path, gleicher Name mit .pdf."
+    required: false
+  design:
+    type: string
+    description: "Design-Variante: `collana` (default, grünes b-imtec/Sans-Serif) oder `magicM` (LaTeX-inspiriert, Serif mit Computer-Modern-Stack, mittige Seitennummerierung im Footer, Booktabs-Tabellen, justified mit Hyphenation)."
+    required: false
+outputs:
+  pdf_path:
+    type: string
+    description: Absoluter Pfad zur erstellten PDF-Datei.
+  size_bytes:
+    type: number
+    description: Dateigröße der PDF in Bytes.
+requires:
+  - python3
+  - python3-markdown
+  - weasyprint
+ai_rem_entity: tool_md_to_pdf

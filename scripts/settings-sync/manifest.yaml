@@ -1,0 +1,26 @@
+name: settings_sync
+description: >
+  Vergleicht die lokale Claude Code settings.json mit dem settings-template.json.
+  mode=check zeigt Abweichungen, mode=apply ergaenzt fehlende Eintraege.
+exec: ./run.sh
+inputs:
+  mode:
+    type: string
+    description: "check (nur Diff anzeigen) oder apply (fehlende Eintraege ergaenzen)"
+    required: false
+  settings_path:
+    type: string
+    description: "Pfad zur settings.json (default: ~/.claude/settings.json)"
+    required: false
+  template_path:
+    type: string
+    description: "Pfad zum Template (default: ~/.claude/settings-template.json)"
+    required: false
+outputs:
+  report:
+    type: string
+    description: Pfad zum Diff-Report.
+  applied:
+    type: boolean
+    description: Ob Aenderungen angewendet wurden.
+ai_rem_entity: tool_settings_sync

@@ -1,0 +1,25 @@
+name: subagent_models
+description: >
+  Schnelle Auskunft, welche Modelle die delegierten Subagenten genutzt haben
+  (= greift die Modellwahl-Regel). Liest die Subagent-Transcripts unter
+  ~/.claude/projects/<proj>/<session>/subagents/agent-*.jsonl und schluesselt pro
+  Agent-Typ (Explore/general-purpose/Plan) x Modell-Familie nach Laeufen, Turns und
+  Output-Tokens auf. scope=session = juengste Session, scope=all = alle Sessions.
+exec: ./run.sh
+inputs:
+  scope:
+    type: string
+    description: "session (juengste Session) oder all (alle Sessions). Default: all"
+    required: false
+  projects_dir:
+    type: string
+    description: "Projects-Verzeichnis (default: ~/.claude/projects)."
+    required: false
+outputs:
+  report_file:
+    type: string
+    description: Pfad zum Klartext-Report.
+  summary:
+    type: string
+    description: Kurzfassung (inline) der Agent-Typ x Modell-Aufschluesselung.
+ai_rem_entity: tool_subagent_models

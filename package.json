@@ -1,0 +1,26 @@
+{
+  "name": "tools-mcp",
+  "version": "0.1.0",
+  "description": "Local script-toolkit MCP server: registriert Scripts aus scripts/ als MCP-Tools, mit Run-Dirs und Pipeline-Runner.",
+  "main": "dist/index.js",
+  "bin": {
+    "tools-mcp": "./dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "undici": "^8.1.0",
+    "yaml": "^2.6.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
