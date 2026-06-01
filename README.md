@@ -95,3 +95,8 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 npm install
 npm run build      # tsc → dist/  (Entrypoints: dist/index.js, dist/registry-server.js)
 ```
+
+## Verwandte Projekte
+
+- [ai-rem](https://github.com/markus7h/ai-rem) — Langzeit-Gedächtnis als Knowledge-Graph-MCP. Pro Script wird per `ai_rem_entity`-Konvention eine `Tool`-Entity gepflegt, damit der Katalog auffindbar bleibt.
+- [mykeyvault](https://github.com/markus7h/mykeyvault) — self-hosted Secrets-Vault (Vaultwarden + REST/MCP). Script-Secrets werden über die mykeyvault-vault-api bezogen, statt sie in Scripts oder Configs abzulegen.
