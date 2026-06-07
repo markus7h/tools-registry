@@ -52,6 +52,13 @@ Das Exec-Script bekommt pro Input `INPUT_<NAME>` als Env-Var sowie `TOOLS_MCP_RU
 Auf dem zentralen Host editiert (per Netz-Mount oder direkt) → die Registry liefert die Änderung
 sofort aus, der Client übernimmt sie beim nächsten Poll (≤5 s) **ohne MCP-Neustart**.
 
+### Beispiel: einen Claude-Code-Skill ausliefern
+
+Ein Script kann Dateien beilegen (`assets/`, werden mitgespiegelt) und sie lokal installieren —
+so lässt sich ein Claude-Code-Skill systemübergreifend verteilen, ohne manuelles Kopieren.
+Siehe `scripts/magic3-design/`: legt SKILL.md + Spec + Theme als Assets bei und schreibt sie via
+`mode=apply` nach `~/.claude/skills/magic3-design/` (`mode=check` zeigt nur den Diff).
+
 ## Meta-Tools
 
 - `list_scripts` — listet alle aktuell registrierten Scripts.

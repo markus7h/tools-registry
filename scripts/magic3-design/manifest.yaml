@@ -1,0 +1,29 @@
+name: magic3_design_install
+description: >
+  Installiert/aktualisiert den Claude-Code-Skill `magic3-design` (hauseigenes
+  magic3-Design: IBCS/SUCCESS, heller Hintergrund, grüner Akzent #388E3C,
+  Source Sans 3 +0,15 pt) lokal unter ~/.claude/skills/magic3-design/.
+  mode=check zeigt nur Abweichungen, mode=apply schreibt die Dateien.
+  So lässt sich der Skill auf jedem System mit tools-mcp ohne manuelles Kopieren
+  ausrollen.
+exec: ./run.sh
+inputs:
+  mode:
+    type: string
+    description: "check (nur Diff anzeigen, default) oder apply (Skill schreiben/aktualisieren)"
+    required: false
+  target_dir:
+    type: string
+    description: "Zielverzeichnis des Skills (default: ~/.claude/skills/magic3-design)"
+    required: false
+outputs:
+  target:
+    type: string
+    description: Zielverzeichnis des Skills.
+  changed:
+    type: boolean
+    description: Ob Dateien abweichen (check) bzw. geschrieben wurden (apply).
+  applied:
+    type: boolean
+    description: Ob im apply-Modus geschrieben wurde.
+ai_rem_entity: tool_magic3_design_install
