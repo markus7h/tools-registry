@@ -63,7 +63,26 @@ if fm_match:
             val = val[1:-1]
         frontmatter[key] = val
 
-html_body = markdown.markdown(md_text, extensions=["tables", "fenced_code", "nl2br"])
+# Kein nl2br: weiche Zeilenumbrueche (Soft-Wraps) im Markdown duerfen NICHT zu harten
+# <br> werden — sonst bricht der Fliesstext mitten im Absatz/Blockquote um. Gewollte
+# Umbrueche bleiben ueber literale <br/>-Tags im Markdown erhalten.
+html_body = markdown.markdown(md_text, extensions=["tables", "fenced_code"])
+
+# Breite Tabellen (viele Spalten) in einen .wide-table-Container packen — das
+# Design kann sie dann auf eine Querformat-Seite legen, damit die Spalten genug
+# Platz bekommen (sonst extreme Silbentrennung in schmalen Hochformat-Spalten).
+def wrap_wide_tables(html, min_cols=5):
+    # Breite Tabellen (viele Spalten) markieren, damit das Design ihnen mehr Breite
+    # geben kann (volle Seitenbreite + kleinere Schrift), ohne Seiten ins Querformat
+    # zu kippen.
+    def repl(m):
+        table = m.group(0)
+        first_row = re.search(r'<tr>(.*?)</tr>', table, re.DOTALL)
+        ncols = len(re.findall(r'<t[hd][ >]', first_row.group(1))) if first_row else 0
+        return f'<div class="wide-table">{table}</div>' if ncols >= min_cols else table
+    return re.sub(r'<table\b[^>]*>.*?</table>', repl, html, flags=re.DOTALL)
+
+html_body = wrap_wide_tables(html_body)
 
 def render_title_block(fm, design):
     # Deutsche und englische Keys akzeptieren (erster Treffer gewinnt).
@@ -102,71 +121,84 @@ DESIGNS = {
     font-family: 'Segoe UI', Arial, sans-serif;
     font-size: 11pt; line-height: 1.6; color: #1a1a1a; margin: 0;
   }
-  .title-block.design-collana { margin: 0 0 24pt 0; padding-bottom: 14pt; border-bottom: 2px solid #16a34a; }
+  .title-block.design-collana { margin: 0 0 24pt 0; padding-bottom: 14pt; border-bottom: 2px solid #fa4a05; }
   .title-block.design-collana .doc-title { font-size: 24pt; font-weight: bold; color: #0f172a; line-height: 1.2; margin-bottom: 4pt; }
-  .title-block.design-collana .doc-subtitle { font-size: 13pt; color: #166534; font-style: italic; margin-bottom: 8pt; }
+  .title-block.design-collana .doc-subtitle { font-size: 13pt; color: #bc3704; font-style: italic; margin-bottom: 8pt; }
   .title-block.design-collana .doc-meta { font-size: 10pt; color: #4b5563; }
-  h1 { font-size: 18pt; color: #0f172a; border-bottom: 2px solid #16a34a; padding-bottom: 6px; margin-top: 0; }
+  h1 { font-size: 18pt; color: #0f172a; border-bottom: 2px solid #fa4a05; padding-bottom: 6px; margin-top: 0; }
   h2 { font-size: 14pt; color: #0f172a; border-bottom: 1px solid #d1d5db; padding-bottom: 4px; margin-top: 24px; }
-  h3 { font-size: 11pt; color: #166534; margin-top: 16px; }
+  h3 { font-size: 11pt; color: #bc3704; margin-top: 16px; }
   code { background: #f3f4f6; padding: 2px 5px; border-radius: 3px; font-size: 9pt; font-family: 'Courier New', monospace; }
-  pre { background: #f3f4f6; padding: 12px; border-radius: 4px; border-left: 3px solid #16a34a; font-size: 9pt; white-space: pre-wrap; }
+  pre { background: #f3f4f6; padding: 12px; border-radius: 4px; border-left: 3px solid #fa4a05; font-size: 9pt; white-space: pre-wrap; }
   table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
-  th { background: #166534; color: #fff; padding: 7px 10px; text-align: left; }
+  th { background: #bc3704; color: #fff; padding: 7px 10px; text-align: left; }
   td { padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
   tr:nth-child(even) td { background: #f9fafb; }
-  blockquote { border-left: 3px solid #16a34a; margin: 10px 0; padding: 6px 14px; color: #4b5563; font-style: italic; background: #f0fdf4; }
+  blockquote { border-left: 3px solid #fa4a05; margin: 10px 0; padding: 6px 14px; color: #4b5563; font-style: italic; background: #fef1ea; }
   hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
   ul, ol { margin: 6px 0; padding-left: 22px; }
   li { margin: 3px 0; }
   strong { color: #0f172a; }
-  a { color: #166534; }
+  a { color: #bc3704; }
 """,
-    # magicM: TeX/LaTeX-inspiriert — Computer-Modern-Stil-Serife,
+    # magicM: TeX/LaTeX-inspirierte Computer-Modern-Serife (Typografie wie gehabt),
+    # Akzentfarben an das magic3-Theme angeglichen (grüner Akzent #388E3C, Tinte #333/#000/#666).
     # Seitennummerierung mittig im Footer ("3 / 12").
     "magicM": """
   @page {
+    size: A4 portrait;
     margin: 2.5cm 2.8cm 2.2cm 2.8cm;
     @bottom-center {
       content: counter(page) " / " counter(pages);
       font-family: 'Latin Modern Roman', 'CMU Serif', 'TeX Gyre Termes', Georgia, 'Times New Roman', serif;
       font-size: 9pt;
-      color: #555;
+      color: #666666;
     }
   }
+  /* Breite Tabellen (>=5 Spalten) nutzen die volle Seitenbreite (in die Ränder
+     hineingezogen) plus kleinere Schrift/engeres Padding — so haben die Spalten im
+     Hochformat genug Platz, ohne Seiten ins Querformat zu kippen. */
+  .wide-table { margin-left: -1.8cm; margin-right: -1.8cm; }
+  .wide-table table { font-size: 8.5pt; width: 100%; }
+  .wide-table th, .wide-table td { padding: 4px 7px; }
   body {
     font-family: 'Latin Modern Roman', 'CMU Serif', 'TeX Gyre Termes', Georgia, 'Times New Roman', serif;
-    font-size: 11pt; line-height: 1.55; color: #1a1a1a; margin: 0;
+    font-size: 11pt; line-height: 1.55; color: #333333; margin: 0;
     text-align: justify;
     hyphens: auto;
   }
-  /* LaTeX-\\maketitle-Look: zentriert, kein Akzent-Linien-Schnickschnack. */
+  /* LaTeX-\\maketitle-Look: zentriert; Akzent über Farbe statt Linien. */
   .title-block.design-magicM { text-align: center; margin: 0 0 28pt 0; }
-  .title-block.design-magicM .doc-title { font-size: 22pt; font-weight: bold; color: #0f172a; line-height: 1.2; letter-spacing: 0.02em; margin-bottom: 6pt; }
-  .title-block.design-magicM .doc-subtitle { font-size: 14pt; font-style: italic; color: #0f172a; margin-bottom: 12pt; }
-  .title-block.design-magicM .doc-meta { font-size: 11pt; color: #333; }
-  h1 { font-size: 20pt; color: #0f172a; margin-top: 0; margin-bottom: 12pt; text-align: center; font-weight: bold; letter-spacing: 0.02em; }
-  h2 { font-size: 14pt; color: #0f172a; margin-top: 22px; margin-bottom: 6px; font-weight: bold; }
-  h3 { font-size: 12pt; color: #0f172a; margin-top: 16px; margin-bottom: 4px; font-style: italic; font-weight: normal; }
+  .title-block.design-magicM .doc-title { font-size: 22pt; font-weight: bold; color: #000000; line-height: 1.2; letter-spacing: 0.02em; margin-bottom: 6pt; }
+  .title-block.design-magicM .doc-subtitle { font-size: 14pt; font-style: italic; color: #2E7D32; margin-bottom: 12pt; }
+  .title-block.design-magicM .doc-meta { font-size: 11pt; color: #666666; }
+  h1 { font-size: 20pt; color: #000000; margin-top: 0; margin-bottom: 12pt; text-align: center; font-weight: bold; letter-spacing: 0.02em; }
+  h2 { font-size: 14pt; color: #000000; margin-top: 22px; margin-bottom: 6px; font-weight: bold; padding-left: 8px; border-left: 4px solid #388E3C; text-align: left; }
+  h3 { font-size: 12pt; color: #333333; margin-top: 16px; margin-bottom: 4px; font-style: italic; font-weight: normal; text-align: left; }
   p { margin: 0 0 8pt 0; text-indent: 1.2em; }
   /* Erster Absatz nach Überschriften ohne Einzug (LaTeX-Konvention). */
   h1 + p, h2 + p, h3 + p, blockquote + p { text-indent: 0; }
   code { font-family: 'Latin Modern Mono', 'CMU Typewriter Text', 'Courier New', monospace; font-size: 10pt; background: #f5f5f5; padding: 1px 4px; border-radius: 2px; }
-  pre { font-family: 'Latin Modern Mono', 'CMU Typewriter Text', 'Courier New', monospace; font-size: 9.5pt; background: #f8f8f8; padding: 10px 12px; border: 1px solid #ddd; white-space: pre-wrap; }
+  pre { font-family: 'Latin Modern Mono', 'CMU Typewriter Text', 'Courier New', monospace; font-size: 9.5pt; background: #f8f8f8; padding: 10px 12px; border: 1px solid #ECECEC; white-space: pre-wrap; }
   pre code { background: transparent; padding: 0; }
-  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 10.5pt; }
+  /* Spaltenbreite richtet sich nach dem Inhalt: auto-Layout, Tabelle nur so breit
+     wie nötig (max. Seitenbreite) — keine gleichmäßige Aufblähung kurzer Spalten. */
+  table { border-collapse: collapse; width: auto; max-width: 100%; table-layout: auto; margin: 14px 0; font-size: 10.5pt; }
   /* Booktabs-Stil: nur waagerechte Linien, keine Vertikalen. */
-  th { border-top: 1.2pt solid #000; border-bottom: 0.6pt solid #000; padding: 6px 10px; text-align: left; font-weight: bold; background: transparent; }
+  /* Zellen linksbündig (kein geerbter Blocksatz), oben ausgerichtet; lange Inhalte
+     umbrechen statt die Spalte zu verbreitern. */
+  th, td { text-align: left; vertical-align: top; overflow-wrap: break-word; word-break: normal; hyphens: auto; }
+  th { border-top: 1.2pt solid #000; border-bottom: 0.6pt solid #000; padding: 6px 10px; font-weight: bold; background: transparent; }
   td { padding: 5px 10px; border-bottom: 0; }
   table tr:last-child td { border-bottom: 1.2pt solid #000; }
   tr:nth-child(even) td { background: transparent; }
-  blockquote { border-left: 2px solid #888; margin: 10px 0 10px 16px; padding: 2px 12px; color: #333; font-style: italic; background: transparent; }
-  hr { border: none; border-top: 0.5pt solid #888; margin: 16px 0; }
+  blockquote { border-left: 4px solid #388E3C; margin: 10px 0 10px 16px; padding: 2px 12px; color: #333333; font-style: italic; background: transparent; }
+  hr { border: none; border-top: 0.5pt solid #D0D0D0; margin: 16px 0; }
   ul, ol { margin: 6px 0; padding-left: 24px; }
   li { margin: 2px 0; }
-  strong { color: #0f172a; font-weight: bold; }
+  strong { color: #000000; font-weight: bold; }
   em { font-style: italic; }
-  a { color: #1a3a6b; text-decoration: none; }
+  a { color: #2E7D32; text-decoration: none; }
 """,
 }
 if design not in DESIGNS:
