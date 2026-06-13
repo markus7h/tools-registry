@@ -6,7 +6,3 @@ dist/
 .deploy.env
 *.log
 .DS_Store
-
-# Lokales, privates Script (nicht ins Repo / nicht in die Registry) — liest den
-# ai-rem Bearer-Token aus ~/.claude.json. Nur Local-Mode auf diesem Client.
-scripts/ai-rem-token/
