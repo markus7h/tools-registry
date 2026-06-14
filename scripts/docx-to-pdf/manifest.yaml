@@ -1,0 +1,29 @@
+name: docx_to_pdf
+description: Konvertiert eine Word-.docx-Datei in PDF. Bevorzugt LibreOffice headless (volle Layout-Treue inkl. Briefkopf/Kopf- und Fußzeilen); fällt sonst auf `pandoc` mit einer verfügbaren PDF-Engine (WeasyPrint/wkhtmltopdf/LaTeX) zurück — dann ohne exaktes Word-Layout. Gibt den PDF-Pfad und das verwendete Backend zurück.
+exec: ./run.sh
+inputs:
+  docx_path:
+    type: string
+    description: Absoluter Pfad zur Eingabe-.docx-Datei.
+    required: true
+  output_path:
+    type: string
+    description: "Absoluter Pfad der Ausgabe-PDF. Standard: gleicher Ordner wie docx_path, gleicher Name mit .pdf."
+    required: false
+outputs:
+  pdf_path:
+    type: string
+    description: Absoluter Pfad zur erstellten PDF-Datei.
+  size_bytes:
+    type: number
+    description: Dateigröße der PDF in Bytes.
+  converter:
+    type: string
+    description: "Verwendetes Backend: libreoffice, libreoffice-flatpak oder pandoc+<engine>."
+  warning:
+    type: string
+    description: "Nicht leer, wenn LibreOffice fehlte und der pandoc-Fallback genutzt wurde (Layout-Treue eingeschränkt)."
+requires:
+  - libreoffice
+  - pandoc
+ai_rem_entity: tool_docx_to_pdf
