@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, stat } from "node:fs/promises";
+import { mkdir, readFile, writeFile, stat, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 
@@ -14,6 +14,36 @@ export async function ensureRun(runId?: string): Promise<RunContext> {
   const dir = join(RUNS_ROOT, id);
   await mkdir(dir, { recursive: true });
   return { runId: id, dir };
+}
+
+/**
+ * Entfernt Run-Dirs, die älter als `maxAgeMs` sind (mtime). Best effort —
+ * Fehler einzelner Einträge werden ignoriert. Beim Start aufgerufen, damit
+ * /tmp/tools-runs nicht unbegrenzt wächst. Default-TTL: 24h.
+ */
+export async function gcRuns(
+  maxAgeMs = Number(process.env.TOOLS_MCP_RUN_TTL_MS ?? 24 * 60 * 60 * 1000)
+): Promise<number> {
+  const cutoff = Date.now() - maxAgeMs;
+  let removed = 0;
+  let entries: string[];
+  try {
+    entries = await readdir(RUNS_ROOT);
+  } catch {
+    return 0; // Root existiert noch nicht
+  }
+  for (const name of entries) {
+    const p = join(RUNS_ROOT, name);
+    try {
+      if ((await stat(p)).mtimeMs < cutoff) {
+        await rm(p, { recursive: true, force: true });
+        removed++;
+      }
+    } catch {
+      /* einzelnen Eintrag überspringen */
+    }
+  }
+  return removed;
 }
 
 /**

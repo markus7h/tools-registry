@@ -56,6 +56,7 @@ export async function executeScript(
       cwd: script.dir,
       env,
       maxBuffer: 10 * 1024 * 1024,
+      timeout: Number(process.env.TOOLS_MCP_SCRIPT_TIMEOUT_MS ?? 60000),
     });
     const outputs = await readOutputs(run.dir);
     return {

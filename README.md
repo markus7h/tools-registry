@@ -96,6 +96,8 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 | `TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH` | Komma-Liste zusätzlicher Env-Vars an Scripts (Default-Whitelist: `PATH, HOME, LANG, LC_*, TMPDIR, TERM, TZ, USER, SHELL`). |
 | `TOOLS_MCP_POLL_MS` | Poll-Intervall des Live-Reloads (Default `5000`). |
 | `TOOLS_MCP_RUNS_DIR` | Wurzel der Run-Dirs (Default `/tmp/tools-runs`). |
+| `TOOLS_MCP_SCRIPT_TIMEOUT_MS` | Hard-Timeout je Script-Ausführung (Default `60000`). |
+| `TOOLS_MCP_RUN_TTL_MS` | Max-Alter eines Run-Dirs; ältere werden beim Start entfernt (Default `86400000` = 24h). |
 | `PORT` / `HOST` | Registry-Server (Default `3457` / `0.0.0.0`). |
 
 > **Sicherheit:** Der Client führt Katalog-Scripts **lokal aus** — die Registry darf daher nur im
