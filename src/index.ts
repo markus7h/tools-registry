@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { z } from "zod";
 import { loadScripts, inputsToZodShape, LoadedScript } from "./script-loader.js";
-import { ensureRun } from "./run-context.js";
+import { ensureRun, gcRuns } from "./run-context.js";
 import { executeScript } from "./script-executor.js";
 import { runPipeline, PipelineSpec } from "./pipeline-runner.js";
 import { fetchCatalog, syncToCache, registryCacheDir } from "./registry.js";
@@ -116,6 +116,11 @@ async function loadFresh(): Promise<LoadedScript[] | null> {
   }
   return await loadScripts(SOURCE_DIR);
 }
+
+// Alte Run-Dirs aufräumen (best effort, blockiert den Start nicht bei Fehlern).
+gcRuns()
+  .then((n) => n > 0 && process.stderr.write(`[tools-mcp] gc: ${n} alte run-dir(s) entfernt\n`))
+  .catch(() => {});
 
 // ── Initiales Laden ──────────────────────────────────────────────────────────
 try {
