@@ -23,6 +23,9 @@ const PROJECT_ROOT = join(__dirname, "..");
 const SCRIPTS_ROOT = resolve(process.env.TOOLS_MCP_SCRIPTS_DIR ?? join(PROJECT_ROOT, "scripts"));
 const PORT = Number(process.env.PORT ?? 3457);
 const HOST = process.env.HOST ?? "0.0.0.0";
+// ponytail: Shared-Bearer-Token statt Katalog-Signatur — genügt fürs vertrauenswürdige LAN.
+// Upgrade-Pfad = Ed25519-Signatur, falls die Registry je außerhalb des LAN exponiert wird.
+const TOKEN = process.env.TOOLS_MCP_REGISTRY_TOKEN;
 
 const NAME_RE = /^[A-Za-z0-9._-]+$/;
 
@@ -68,6 +71,11 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   if (req.method !== "GET") return send(res, 405, JSON.stringify({ error: "method not allowed" }));
 
   if (url.pathname === "/health") return send(res, 200, "ok", "text/plain");
+
+  // Auth (außer /health) nur wenn ein Token konfiguriert ist.
+  if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
+    return send(res, 401, JSON.stringify({ error: "unauthorized" }));
+  }
 
   if (url.pathname === "/registry") {
     const cat = await buildCatalog();
