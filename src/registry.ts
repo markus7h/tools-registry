@@ -1,5 +1,5 @@
 import { mkdir, writeFile, readFile, rm, readdir, chmod } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { join, dirname, sep } from "node:path";
 import { homedir } from "node:os";
 
 /**
@@ -24,17 +24,38 @@ export interface RegistryCatalog {
 
 const DEFAULT_CACHE = join(homedir(), ".cache", "tools-mcp", "scripts");
 const VERSION_FILE = ".registry-version";
+/** Erlaubte Script-Verzeichnisnamen — identisch zur Server-Validierung in registry-server.ts. */
+const NAME_RE = /^[A-Za-z0-9._-]+$/;
 
 export function registryCacheDir(): string {
   return process.env.TOOLS_MCP_CACHE_DIR ?? DEFAULT_CACHE;
+}
+
+/** Liegt `target` innerhalb von `dir` (oder ist `dir` selbst)? Schutz gegen `../`-Pfade. */
+export function isInside(dir: string, target: string): boolean {
+  return target === dir || target.startsWith(dir + sep);
+}
+
+/** Gültiger Script-Verzeichnisname (kein `..`, kein `/`). */
+export function isValidScriptName(name: string): boolean {
+  return NAME_RE.test(name);
 }
 
 function withTimeout(ms: number): AbortSignal {
   return AbortSignal.timeout(ms);
 }
 
+/** Bearer-Header, falls TOOLS_MCP_REGISTRY_TOKEN gesetzt — sonst leeres Objekt. */
+function authHeaders(): Record<string, string> {
+  const token = process.env.TOOLS_MCP_REGISTRY_TOKEN;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function fetchCatalog(baseUrl: string): Promise<RegistryCatalog> {
-  const res = await fetch(new URL("/registry", baseUrl), { signal: withTimeout(5000) });
+  const res = await fetch(new URL("/registry", baseUrl), {
+    signal: withTimeout(5000),
+    headers: authHeaders(),
+  });
   if (!res.ok) throw new Error(`registry GET /registry -> ${res.status}`);
   const cat = (await res.json()) as RegistryCatalog;
   if (!cat?.version || !Array.isArray(cat.scripts)) {
@@ -47,7 +68,7 @@ async function fetchFile(baseUrl: string, script: string, path: string): Promise
   const url = new URL("/registry/file", baseUrl);
   url.searchParams.set("script", script);
   url.searchParams.set("path", path);
-  const res = await fetch(url, { signal: withTimeout(10000) });
+  const res = await fetch(url, { signal: withTimeout(10000), headers: authHeaders() });
   if (!res.ok) throw new Error(`registry GET ${script}/${path} -> ${res.status}`);
   return Buffer.from(await res.arrayBuffer());
 }
@@ -78,11 +99,21 @@ export async function syncToCache(
   }
 
   for (const s of catalog.scripts) {
+    // Server-Katalog wird nicht blind vertraut: bösartige name/rel-Pfade dürfen nicht
+    // außerhalb des Cache schreiben (sonst beliebige Dateien überschreibbar → RCE).
+    if (!isValidScriptName(s.name)) {
+      process.stderr.write(`[tools-mcp] skip script with invalid name: ${s.name}\n`);
+      continue;
+    }
     const sdir = join(cacheDir, s.name);
     await mkdir(sdir, { recursive: true });
     for (const rel of s.files) {
-      const buf = await fetchFile(baseUrl, s.name, rel);
       const target = join(sdir, rel);
+      if (!isInside(sdir, target)) {
+        process.stderr.write(`[tools-mcp] skip path traversal: ${s.name}/${rel}\n`);
+        continue;
+      }
+      const buf = await fetchFile(baseUrl, s.name, rel);
       await mkdir(dirname(target), { recursive: true });
       await writeFile(target, buf);
       if (rel.endsWith(".sh") || rel.endsWith(".py")) await chmod(target, 0o755);

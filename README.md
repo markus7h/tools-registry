@@ -90,11 +90,19 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 | Variable | Wirkung |
 |---|---|
 | `TOOLS_MCP_REGISTRY_URL` | aktiviert den Registry-Client (Katalog-Quelle). Ungesetzt → lokales `scripts/`. |
+| `TOOLS_MCP_REGISTRY_TOKEN` | Shared Bearer-Token. Server: gesetzt → alle Endpoints außer `/health` verlangen `Authorization: Bearer <token>`. Client: schickt es mit. |
 | `TOOLS_MCP_SCRIPTS_DIR` | lokales Script-Verzeichnis (Dev-Fallback / Quelle des Registry-Servers). |
 | `TOOLS_MCP_CACHE_DIR` | lokaler Cache (Default `~/.cache/tools-mcp/scripts`). |
+| `TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH` | Komma-Liste zusätzlicher Env-Vars an Scripts (Default-Whitelist: `PATH, HOME, LANG, LC_*, TMPDIR, TERM, TZ, USER, SHELL`). |
 | `TOOLS_MCP_POLL_MS` | Poll-Intervall des Live-Reloads (Default `5000`). |
 | `TOOLS_MCP_RUNS_DIR` | Wurzel der Run-Dirs (Default `/tmp/tools-runs`). |
 | `PORT` / `HOST` | Registry-Server (Default `3457` / `0.0.0.0`). |
+
+> **Sicherheit:** Der Client führt Katalog-Scripts **lokal aus** — die Registry darf daher nur im
+> vertrauenswürdigen LAN erreichbar sein, nie auf einem öffentlichen Interface. `HOST` auf die
+> LAN-IP statt `0.0.0.0` binden und `TOOLS_MCP_REGISTRY_TOKEN` setzen. (Katalog-Integrität per
+> Signatur ist bewusst nicht implementiert — Upgrade-Pfad, falls die Registry je außerhalb des
+> LAN läuft.)
 
 ## Build
 
