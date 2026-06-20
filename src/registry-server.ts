@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createServer, IncomingMessage, ServerResponse } from "node:http";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { join, resolve, relative, dirname, basename, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
@@ -60,8 +60,31 @@ async function buildCatalog() {
   return { version: hash.digest("hex"), scripts: entries };
 }
 
-function send(res: ServerResponse, status: number, body: string | Buffer, type = "application/json") {
-  res.writeHead(status, { "Content-Type": type });
+/** Höchste mtime im Script-Baum — billiger Änderungs-Indikator (kein read+hash). */
+async function treeMaxMtime(dir: string): Promise<number> {
+  let max = 0;
+  for (const e of await readdir(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    max = e.isDirectory() ? Math.max(max, await treeMaxMtime(p)) : Math.max(max, (await stat(p)).mtimeMs);
+  }
+  return max;
+}
+
+// Katalog cachen, nur bei mtime-Änderung neu bauen (jeder Client pollt alle 5s).
+let cachedCatalog: Awaited<ReturnType<typeof buildCatalog>> | null = null;
+let cachedMtime = -1;
+
+async function getCatalog(): Promise<Awaited<ReturnType<typeof buildCatalog>>> {
+  const mtime = await treeMaxMtime(SCRIPTS_ROOT).catch(() => Date.now());
+  if (!cachedCatalog || mtime !== cachedMtime) {
+    cachedCatalog = await buildCatalog();
+    cachedMtime = mtime;
+  }
+  return cachedCatalog;
+}
+
+function send(res: ServerResponse, status: number, body: string | Buffer, type = "application/json", headers: Record<string, string> = {}) {
+  res.writeHead(status, { "Content-Type": type, ...headers });
   res.end(body);
 }
 
@@ -78,8 +101,10 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   }
 
   if (url.pathname === "/registry") {
-    const cat = await buildCatalog();
-    return send(res, 200, JSON.stringify(cat));
+    const cat = await getCatalog();
+    const etag = `"${cat.version}"`;
+    if (req.headers["if-none-match"] === etag) return send(res, 304, "", "application/json", { ETag: etag });
+    return send(res, 200, JSON.stringify(cat), "application/json", { ETag: etag });
   }
 
   if (url.pathname === "/registry/file") {
