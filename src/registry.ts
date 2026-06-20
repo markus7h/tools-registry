@@ -51,11 +51,17 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export async function fetchCatalog(baseUrl: string): Promise<RegistryCatalog> {
-  const res = await fetch(new URL("/registry", baseUrl), {
-    signal: withTimeout(5000),
-    headers: authHeaders(),
-  });
+/** Sentinel: Server meldet 304 (Katalog unverändert ggü. übergebener Version). */
+export const NOT_MODIFIED = Symbol("not-modified");
+
+export async function fetchCatalog(
+  baseUrl: string,
+  etag?: string | null
+): Promise<RegistryCatalog | typeof NOT_MODIFIED> {
+  const headers = authHeaders();
+  if (etag) headers["If-None-Match"] = `"${etag}"`;
+  const res = await fetch(new URL("/registry", baseUrl), { signal: withTimeout(5000), headers });
+  if (res.status === 304) return NOT_MODIFIED;
   if (!res.ok) throw new Error(`registry GET /registry -> ${res.status}`);
   const cat = (await res.json()) as RegistryCatalog;
   if (!cat?.version || !Array.isArray(cat.scripts)) {
