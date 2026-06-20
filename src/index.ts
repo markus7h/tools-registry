@@ -8,7 +8,7 @@ import { loadScripts, inputsToZodShape, LoadedScript } from "./script-loader.js"
 import { ensureRun, gcRuns } from "./run-context.js";
 import { executeScript } from "./script-executor.js";
 import { runPipeline, PipelineSpec } from "./pipeline-runner.js";
-import { fetchCatalog, syncToCache, registryCacheDir } from "./registry.js";
+import { fetchCatalog, syncToCache, registryCacheDir, NOT_MODIFIED } from "./registry.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..");
@@ -108,8 +108,8 @@ let lastVersion: string | null = null;
 /** Holt frischen Script-Stand aus Registry (mit Cache-Sync) oder lokalem Dir. */
 async function loadFresh(): Promise<LoadedScript[] | null> {
   if (REGISTRY_URL) {
-    const cat = await fetchCatalog(REGISTRY_URL);
-    if (cat.version === lastVersion) return null; // unverändert
+    const cat = await fetchCatalog(REGISTRY_URL, lastVersion);
+    if (cat === NOT_MODIFIED || cat.version === lastVersion) return null; // unverändert (304 oder gleicher Hash)
     await syncToCache(REGISTRY_URL, cat, CACHE_DIR);
     lastVersion = cat.version;
     return await loadScripts(CACHE_DIR);
