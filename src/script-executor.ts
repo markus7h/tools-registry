@@ -5,6 +5,26 @@ import { RunContext, readOutputs } from "./run-context.js";
 
 const execFileAsync = promisify(execFile);
 
+// Scripts erben NICHT das volle Prozess-env (sonst sind MCP-Secrets für jedes Script sichtbar).
+// Basis-Whitelist + Prefix-Whitelist; weitere Vars über TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH.
+const ENV_WHITELIST = new Set(["PATH", "HOME", "LANG", "TMPDIR", "TERM", "TZ", "USER", "SHELL"]);
+const ENV_PREFIX_WHITELIST = ["LC_"];
+
+export function baseEnv(): NodeJS.ProcessEnv {
+  const passthrough = (process.env.TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const out: NodeJS.ProcessEnv = {};
+  for (const [k, v] of Object.entries(process.env)) {
+    if (v === undefined) continue;
+    if (ENV_WHITELIST.has(k) || ENV_PREFIX_WHITELIST.some((p) => k.startsWith(p)) || passthrough.includes(k)) {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
 export interface ExecResult {
   status: "ok" | "error";
   run_id: string;
@@ -21,7 +41,7 @@ export async function executeScript(
   run: RunContext
 ): Promise<ExecResult> {
   const env: NodeJS.ProcessEnv = {
-    ...process.env,
+    ...baseEnv(),
     TOOLS_MCP_RUN_DIR: run.dir,
     TOOLS_MCP_RUN_ID: run.runId,
     TOOLS_MCP_INPUTS_JSON: JSON.stringify(inputs),
