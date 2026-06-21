@@ -106,6 +106,33 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 > Signatur ist bewusst nicht implementiert — Upgrade-Pfad, falls die Registry je außerhalb des
 > LAN läuft.)
 
+## Discovery-Hook (UserPromptSubmit)
+
+`hooks/tool-discovery.sh` (Python) ist ein Claude-Code-`UserPromptSubmit`-Hook. Er
+schickt den Prompt an den ai-rem-`/discover`-Endpoint und injiziert dessen Antwort als
+Kontext, damit Claude passende Tools/Playbooks nutzt statt Eigenlösungen zu bauen:
+
+- **`<routines>`** — gepinnte Meta-Regeln aus ai-rem, *immer* (unabhängig vom Keyword-Match).
+- **`<available-tools>` / `<relevant-knowledge>`** — relevanz-gematchte Treffer.
+- **`<active-context>` / `<context-uncertain>`** — der aufgelöste privat/work-Kontext.
+
+Endpoint + Bearer-Token werden aus `AI_REM_ENDPOINT` bzw. `~/.claude.json`
+(`mcpServers.ai-rem`) abgeleitet. Der **privat/work-Kontext** wird hybrid bestimmt:
+
+1. Override `~/.claude/.active-context` (Inhalt `work` oder `private`) — höchste Priorität.
+2. sonst `cwd` gegen `~/.claude/context-map.json` (Pfad-Präfixe → Kontext, längster Treffer gewinnt).
+3. kein Treffer → `private` + `<context-uncertain>`-Marker.
+
+`~/.claude/context-map.json` (Beispiel):
+
+```json
+{ "work": ["/pfad/zu/work-root"], "private": ["/Users/<user>", "/pfad/zu/privat-root"] }
+```
+
+Der Hook ist fail-silent (nie `exit != 0`) — bei Fehler/leerem Prompt/kein Treffer
+bleibt er still und blockiert den Prompt nie. Registrierung in `~/.claude/settings.json`
+unter `hooks.UserPromptSubmit`.
+
 ## Build
 
 ```bash
