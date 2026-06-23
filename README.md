@@ -57,7 +57,7 @@ Deploy (Host via Env oder untracked `.deploy.env`):
 
 ```bash
 HOST=my-host ./deploy-convert.sh    # scp convert-service/ → docker compose up -d --build
-# Endpoint: http://<host>:3458
+# Endpoint: http://<host>:3459  (Host-Port; 3458 = mykeyvault-mcp auf mystorage)
 ```
 
 ## Ein Script anlegen
@@ -131,9 +131,9 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 | `TOOLS_MCP_SCRIPT_TIMEOUT_MS` | Hard-Timeout je Script-Ausführung (Default `60000`). |
 | `TOOLS_MCP_RUN_TTL_MS` | Max-Alter eines Run-Dirs; ältere werden beim Start entfernt (Default `86400000` = 24h). |
 | `PORT` / `HOST` | Registry-Server (Default `3457` / `0.0.0.0`). |
-| `TOOLS_MCP_CONVERT_URL` | Basis-URL des Konvertier-Dienstes für die curl-Wrapper (Default `http://192.168.2.15:3458`). Override braucht Eintrag in `TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH`. |
+| `TOOLS_MCP_CONVERT_URL` | Basis-URL des Konvertier-Dienstes für die curl-Wrapper (Default `http://192.168.2.15:3459`). Override braucht Eintrag in `TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH`. |
 | `TOOLS_MCP_CONVERT_TOKEN` | Bearer-Token, das die Wrapper an den Dienst schicken (muss `CONVERT_TOKEN` des Dienstes entsprechen). |
-| `CONVERT_TOKEN` / `CONVERT_PORT` | Konvertier-Dienst: optionales Bearer-Token (leer = aus) / Host-Port (Default `3458`). |
+| `CONVERT_TOKEN` / `CONVERT_PORT` | Konvertier-Dienst: optionales Bearer-Token (leer = aus) / Host-Port (Default `3459`; 3458 belegt). |
 
 > **Sicherheit:** Der Client führt Katalog-Scripts **lokal aus** — die Registry darf daher nur im
 > vertrauenswürdigen LAN erreichbar sein, nie auf einem öffentlichen Interface. `HOST` auf die

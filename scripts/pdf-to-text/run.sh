@@ -11,7 +11,7 @@ if [[ ! -f "$INPUT_PDF_PATH" ]]; then
   exit 2
 fi
 
-SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3458}"
+SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3459}"
 layout="false"
 [[ "${INPUT_LAYOUT:-}" == "true" ]] && layout="true"
 

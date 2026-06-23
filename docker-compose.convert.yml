@@ -7,7 +7,7 @@ services:
     container_name: tools-convert
     restart: unless-stopped
     ports:
-      - "${CONVERT_PORT:-3458}:3458"
+      - "${CONVERT_PORT:-3459}:3458"
     environment:
       - PORT=3458
       - HOST=0.0.0.0
