@@ -1,0 +1,93 @@
+/* magic3 — Theme für HTML & WeasyPrint-PDF
+   IBCS-konform (SUCCESS), heller Hintergrund, grüner Akzent #388E3C.
+   WeasyPrint-Hinweis: Flex statt Grid verwenden. */
+
+:root {
+  /* Hintergrund / Flächen */
+  --bg:        #FFFFFF;   /* Inhaltsflächen, Karten */
+  --bg-page:   #FAFAFA;   /* Seiten-/Folien-Grund */
+  --line-card: #ECECEC;   /* Karten-Rand / Trennlinien */
+  --line-fine: #D0D0D0;   /* Tabellen-/Achslinien */
+
+  /* Text */
+  --ink:       #333333;   /* Fließtext, Datenwerte */
+  --ink-title: #000000;   /* starke Botschafts-Titel */
+  --ink-muted: #666666;   /* Annotation, Achsen, Quelle */
+
+  /* Bewertung (Farbe folgt der Bewertung, nicht dem Vorzeichen) */
+  --accent:        #388E3C; /* günstig / Akzent */
+  --accent-strong: #2E7D32; /* Hover/dunkler */
+  --accent-soft:   #DCEBD6; /* günstige Fläche */
+  --bad:           #DD3333; /* ungünstig */
+  --bad-soft:      #F7D5D5;
+
+  /* Referenzreihen */
+  --plan: #808080; /* Plan/Budget — nur Kontur */
+  --py:   #B0B0B0; /* Vorjahr / Forecast */
+
+  /* Typografie */
+  --font: "Source Sans 3", "Source Sans Pro", Arial, sans-serif;
+  --tracking: 0.15pt;  /* Laufweite: +0,15 pt (Word/PPTX: Zeichenabstand erweitert 0,15 pt) */
+}
+
+* { box-shadow: none !important; background-image: none !important; } /* SIMPLIFY: keine Schatten/Verläufe */
+
+html { background: var(--bg-page); }
+
+body {
+  font-family: var(--font);
+  letter-spacing: var(--tracking);
+  color: var(--ink);
+  background: var(--bg-page);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Botschafts-Titel */
+h1 { color: var(--ink-title); font-size: 1.6rem; font-weight: 700; margin: 0 0 .25em; }
+h2 { color: var(--ink-title); font-size: 1.2rem; font-weight: 600; margin: 1.4em 0 .4em;
+     padding-left: .5rem; border-left: 4px solid var(--accent); } /* Akzentbalken */
+h3 { color: var(--ink); font-size: 1.02rem; font-weight: 600; margin: 1em 0 .3em; }
+
+p, li { color: var(--ink); }
+small, .source, .annotation { color: var(--ink-muted); font-size: .82rem; }
+
+a { color: var(--accent-strong); text-decoration: none; }
+
+/* Layout-Container: Flex statt Grid (WeasyPrint) */
+.row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.card {
+  background: var(--bg);
+  border: 1px solid var(--line-card);
+  border-radius: 6px;
+  padding: 1rem 1.1rem;
+  flex: 1 1 0;
+}
+
+/* Tabellen: dünne Linien, Zahlen rechtsbündig */
+table { border-collapse: collapse; width: 100%; background: var(--bg); }
+th, td { padding: .4rem .6rem; border-bottom: 1px solid var(--line-fine); }
+th { color: var(--ink-muted); font-weight: 600; text-align: left; }
+td.num, th.num, td:not(:first-child), th:not(:first-child) { text-align: right;
+  font-variant-numeric: tabular-nums; }
+
+/* Bewertung in Zahlen/Deltas */
+.good, .pos { color: var(--accent-strong); }
+.bad, .neg  { color: var(--bad); }
+.good-bg { background: var(--accent-soft); }
+.bad-bg  { background: var(--bad-soft); }
+
+/* Akzent-/Referenz-Hilfsklassen für Charts/Balken */
+.bar-actual   { background: var(--ink); }
+.bar-accent   { background: var(--accent); }
+.bar-bad      { background: var(--bad); }
+.bar-plan     { background: transparent; border: 1.5px solid var(--plan); } /* Plan = nur Kontur */
+.bar-py       { background: var(--py); }
+
+/* PDF-Seite */
+@page {
+  size: A4;
+  margin: 18mm 16mm 16mm;
+  background: var(--bg);
+  @bottom-center { content: counter(page) " / " counter(pages); color: #666; font-size: 9px; }
+}
