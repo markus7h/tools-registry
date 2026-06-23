@@ -1,21 +1,33 @@
 #!/usr/bin/env bash
+# Dünner Wrapper: lädt die lokale PDF zum zentralen Konvertier-Dienst (pdftotext)
+# hoch und schreibt den extrahierten Text ins run_dir.
 set -euo pipefail
 
 : "${TOOLS_MCP_RUN_DIR:?TOOLS_MCP_RUN_DIR not set}"
 : "${INPUT_PDF_PATH:?INPUT_PDF_PATH not set}"
 
 if [[ ! -f "$INPUT_PDF_PATH" ]]; then
-  printf 'ERROR: PDF not found: %s\n' "$INPUT_PDF_PATH" >&2
+  printf 'ERROR: PDF nicht gefunden: %s\n' "$INPUT_PDF_PATH" >&2
   exit 2
 fi
 
-out="${TOOLS_MCP_RUN_DIR}/extracted.txt"
-layout_flag=""
-if [[ "${INPUT_LAYOUT:-}" == "true" ]]; then
-  layout_flag="-layout"
-fi
+SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3458}"
+layout="false"
+[[ "${INPUT_LAYOUT:-}" == "true" ]] && layout="true"
 
-pdftotext $layout_flag "$INPUT_PDF_PATH" "$out"
+out="${TOOLS_MCP_RUN_DIR}/extracted.txt"
+
+AUTH=()
+[[ -n "${TOOLS_MCP_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_MCP_CONVERT_TOKEN}")
+
+code=$(curl -sS "${AUTH[@]}" --data-binary @"$INPUT_PDF_PATH" \
+  -w '%{http_code}' -o "$out" \
+  "$SVC/pdf_to_text?layout=${layout}")
+if [[ "$code" != "200" ]]; then
+  printf 'ERROR: Konvertier-Dienst (%s) HTTP %s: %s\n' "$SVC" "$code" "$(cat "$out" 2>/dev/null)" >&2
+  rm -f "$out"
+  exit 6
+fi
 
 chars=$(wc -c < "$out" | tr -d ' ')
 

@@ -1,0 +1,21 @@
+services:
+  tools-convert:
+    image: tools-convert:latest
+    build:
+      context: ./convert-service
+      dockerfile: Dockerfile
+    container_name: tools-convert
+    restart: unless-stopped
+    ports:
+      - "${CONVERT_PORT:-3458}:3458"
+    environment:
+      - PORT=3458
+      - HOST=0.0.0.0
+      # Optionales Shared-Bearer-Token (leer = aus). Im LAN binden, nie öffentlich.
+      - CONVERT_TOKEN=${CONVERT_TOKEN:-}
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:3458/health').read()==b'ok' else 1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
