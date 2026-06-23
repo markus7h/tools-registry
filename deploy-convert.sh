@@ -33,4 +33,4 @@ ssh "${HOST}" "cd ${REMOTE_DIR} && docker compose up -d --build" 2>&1 \
 
 echo "→ container status"
 ssh "${HOST}" "docker ps --filter name=tools-convert --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
-echo "→ Endpoint: http://${HOST}:${CONVERT_PORT:-3458}  (/health, /html_to_pdf, /md_to_pdf, /docx_to_pdf, /pdf_to_text)"
+echo "→ Endpoint: http://${HOST}:${CONVERT_PORT:-3459}  (/health, /html_to_pdf, /md_to_pdf, /docx_to_pdf, /pdf_to_text)"
