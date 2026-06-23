@@ -11,7 +11,7 @@ if [[ ! -f "$INPUT_HTML_PATH" ]]; then
   exit 2
 fi
 
-SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3458}"
+SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3459}"
 theme="${INPUT_THEME:-none}"
 landscape="${INPUT_LANDSCAPE:-false}"
 wait_ms="${INPUT_WAIT_MS:-4000}"
