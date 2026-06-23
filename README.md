@@ -28,6 +28,38 @@ zentraler Host                              Client (Mac etc.)
 Identifier eines Scripts ist der **Verzeichnisname** (für Datei-Pfade); der **MCP-Tool-Name**
 kommt aus `manifest.name` (das der Client lokal aus dem Cache liest).
 
+## Konvertier-Dienst (Teil B)
+
+Manche Tools brauchen schwere Helfer (Chromium, LibreOffice, WeasyPrint, poppler). Die würden
+sonst **auf jedem Client** liegen müssen — denn Scripts laufen Client-lokal, nicht im
+Registry-Container. Stattdessen bündelt ein **zustandsloser Konvertier-Dienst** (`convert-service/`,
+eigener Container auf dem zentralen Host) diese Helfer an **einem** Ort. Die Scripts sind dann
+**dünne curl-Wrapper**: lokale Datei rein → fertige Datei raus.
+
+```
+Client (Mac/Linux/…)                       zentraler Host (LAN)
+run.sh = curl-Wrapper   --POST Datei-->    tools-convert (Docker)
+  liest lokale Datei      ?params           chromium · libreoffice · weasyprint
+  schreibt output_path   <--Bytes-----      · pandoc · poppler + stdlib-HTTP-Server
+                                            tools-registry (Docker, Fileserver scripts/)
+```
+
+- **Vorteil:** Clients brauchen nur `curl` — kein Tool-Zoo pro Host, kein Snap-Confinement.
+  Lokaldatei-Zugriff bleibt, weil der Wrapper lokal läuft und nur die Bytes hoch-/runterlädt.
+- **Trade-off (bewusst):** Konvertierung braucht Netz zum Dienst; offline = Fehler (kein
+  Local-Fallback, sonst wären die Host-Deps zurück).
+- **Endpunkte** (`convert-service/server.py`, Body = rohe Datei-Bytes, Antwort = Ergebnis-Bytes):
+  `POST /html_to_pdf?theme=&landscape=&wait_ms=`, `POST /md_to_pdf?design=`, `POST /docx_to_pdf`
+  (Metadaten in `X-Converter`/`X-Warning`), `POST /pdf_to_text?layout=`, `GET /health`.
+- Diese Tools nutzen den Dienst: `html_to_pdf`, `md_to_pdf`, `docx_to_pdf`, `pdf_to_text`.
+
+Deploy (Host via Env oder untracked `.deploy.env`):
+
+```bash
+HOST=my-host ./deploy-convert.sh    # scp convert-service/ → docker compose up -d --build
+# Endpoint: http://<host>:3458
+```
+
 ## Ein Script anlegen
 
 `scripts/<name>/manifest.yaml` + ausführbares `exec`-Script:
@@ -99,6 +131,9 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 | `TOOLS_MCP_SCRIPT_TIMEOUT_MS` | Hard-Timeout je Script-Ausführung (Default `60000`). |
 | `TOOLS_MCP_RUN_TTL_MS` | Max-Alter eines Run-Dirs; ältere werden beim Start entfernt (Default `86400000` = 24h). |
 | `PORT` / `HOST` | Registry-Server (Default `3457` / `0.0.0.0`). |
+| `TOOLS_MCP_CONVERT_URL` | Basis-URL des Konvertier-Dienstes für die curl-Wrapper (Default `http://192.168.2.15:3458`). Override braucht Eintrag in `TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH`. |
+| `TOOLS_MCP_CONVERT_TOKEN` | Bearer-Token, das die Wrapper an den Dienst schicken (muss `CONVERT_TOKEN` des Dienstes entsprechen). |
+| `CONVERT_TOKEN` / `CONVERT_PORT` | Konvertier-Dienst: optionales Bearer-Token (leer = aus) / Host-Port (Default `3458`). |
 
 > **Sicherheit:** Der Client führt Katalog-Scripts **lokal aus** — die Registry darf daher nur im
 > vertrauenswürdigen LAN erreichbar sein, nie auf einem öffentlichen Interface. `HOST` auf die

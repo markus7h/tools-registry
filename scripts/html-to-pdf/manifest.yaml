@@ -1,0 +1,34 @@
+name: html_to_pdf
+description: Rendert eine HTML-Datei (inkl. JavaScript/Mermaid-Diagrammen) via Headless-Chromium im zentralen Konvertier-Dienst zu PDF. Optional theme=magic3 injiziert das magic3-Theme (hell, grüner Akzent #388E3C). Gibt den PDF-Pfad zurück.
+exec: ./run.sh
+inputs:
+  html_path:
+    type: string
+    description: Absoluter Pfad zur Eingabe-HTML-Datei.
+    required: true
+  output_path:
+    type: string
+    description: "Absoluter Pfad der Ausgabe-PDF. Standard: gleicher Ordner/Name wie html_path mit .pdf."
+    required: false
+  theme:
+    type: string
+    description: "Optik: 'none' (default, HTML unverändert) oder 'magic3' (magic3-Theme injizieren)."
+    required: false
+  landscape:
+    type: boolean
+    description: "Querformat (default false)."
+    required: false
+  wait_ms:
+    type: integer
+    description: "Render-Wartezeit für JS/Mermaid in ms (default 4000; CDN-geladenes Mermaid braucht Internet im Dienst)."
+    required: false
+outputs:
+  pdf_path:
+    type: string
+    description: Absoluter Pfad zur erstellten PDF-Datei.
+  size_bytes:
+    type: number
+    description: Dateigröße der PDF in Bytes.
+requires:
+  - curl
+ai_rem_entity: tool_html_to_pdf

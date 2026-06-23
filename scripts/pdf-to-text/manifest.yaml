@@ -1,5 +1,5 @@
 name: pdf_to_text
-description: Extrahiert reinen Text aus einer PDF-Datei via pdftotext (poppler). Schreibt extracted.txt ins run_dir.
+description: Extrahiert reinen Text aus einer PDF-Datei via pdftotext (poppler, im zentralen Konvertier-Dienst). Schreibt extracted.txt ins run_dir.
 exec: ./run.sh
 inputs:
   pdf_path:
@@ -18,5 +18,5 @@ outputs:
     type: number
     description: Anzahl Zeichen im extrahierten Text.
 requires:
-  - pdftotext
+  - curl
 ai_rem_entity: tool_pdf_to_text
