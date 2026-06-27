@@ -3,7 +3,7 @@
 # (LibreOffice headless, Fallback pandoc) hoch und speichert die PDF.
 set -euo pipefail
 
-: "${TOOLS_MCP_RUN_DIR:?TOOLS_MCP_RUN_DIR not set}"
+: "${TOOLS_RUN_DIR:?TOOLS_RUN_DIR not set}"
 : "${INPUT_DOCX_PATH:?INPUT_DOCX_PATH not set}"
 
 if [[ ! -f "$INPUT_DOCX_PATH" ]]; then
@@ -11,7 +11,7 @@ if [[ ! -f "$INPUT_DOCX_PATH" ]]; then
   exit 2
 fi
 
-SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3459}"
+SVC="${TOOLS_CONVERT_URL:-http://192.168.2.15:3459}"
 
 if [[ -n "${INPUT_OUTPUT_PATH:-}" ]]; then
   pdf_out="$INPUT_OUTPUT_PATH"
@@ -21,9 +21,9 @@ fi
 mkdir -p "$(dirname "$pdf_out")"
 
 AUTH=()
-[[ -n "${TOOLS_MCP_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_MCP_CONVERT_TOKEN}")
+[[ -n "${TOOLS_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_CONVERT_TOKEN}")
 
-hdr="${TOOLS_MCP_RUN_DIR}/hdr"
+hdr="${TOOLS_RUN_DIR}/hdr"
 code=$(curl -sS "${AUTH[@]}" --data-binary @"$INPUT_DOCX_PATH" \
   -D "$hdr" -w '%{http_code}' -o "$pdf_out" \
   "$SVC/docx_to_pdf")
@@ -40,7 +40,7 @@ warning=$(grep -i '^x-warning:' "$hdr" | sed 's/^[^:]*:[[:space:]]*//' | tr -d '
 
 if size=$(stat -c%s "$pdf_out" 2>/dev/null); then :; else size=$(stat -f%z "$pdf_out"); fi
 
-cat > "${TOOLS_MCP_RUN_DIR}/outputs.json" <<EOF
+cat > "${TOOLS_RUN_DIR}/outputs.json" <<EOF
 {
   "pdf_path": "${pdf_out}",
   "size_bytes": ${size},

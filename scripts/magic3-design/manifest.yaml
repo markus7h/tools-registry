@@ -4,7 +4,7 @@ description: >
   magic3-Design: IBCS/SUCCESS, heller Hintergrund, grüner Akzent #388E3C,
   Source Sans 3 +0,15 pt) lokal unter ~/.claude/skills/magic3-design/.
   mode=check zeigt nur Abweichungen, mode=apply schreibt die Dateien.
-  So lässt sich der Skill auf jedem System mit tools-mcp ohne manuelles Kopieren
+  So lässt sich der Skill auf jedem System mit tools-registry ohne manuelles Kopieren
   ausrollen.
 exec: ./run.sh
 inputs:

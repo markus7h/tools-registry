@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy des tools-mcp Registry-Servers (Teil A) auf den zentralen Host.
+# Deploy des tools-registry Registry-Servers (Teil A) auf den zentralen Host.
 #
 # Baut lokal (tsc), scp't dist/ + Build-Kontext nach $HOST:$REMOTE_DIR und
 # baut/recreatet den Container dort. scripts/ wird NICHT mitkopiert — der
@@ -20,7 +20,7 @@ REMOTE_DIR="${REMOTE_DIR:-tools-registry}"
 # Absoluter Pfad des Repo-scripts/-Verzeichnisses AUF DEM HOST. Pflicht, weil der
 # compose-Default ./scripts (relativ zu REMOTE_DIR) leer ist → Registry liefert
 # leeren Katalog. Wird unten als .env in REMOTE_DIR geschrieben, damit compose ihn mountet.
-SCRIPTS_DIR="${SCRIPTS_DIR:?SCRIPTS_DIR nicht gesetzt — absoluter Host-Pfad zu tools-mcp/scripts (Env oder .deploy.env)}"
+SCRIPTS_DIR="${SCRIPTS_DIR:?SCRIPTS_DIR nicht gesetzt — absoluter Host-Pfad zu tools-registry/scripts (Env oder .deploy.env)}"
 
 echo "→ build (tsc)"
 npm run build >/dev/null

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${TOOLS_MCP_RUN_DIR:?TOOLS_MCP_RUN_DIR not set}"
+: "${TOOLS_RUN_DIR:?TOOLS_RUN_DIR not set}"
 
 MODE="${INPUT_MODE:-check}"
 KIND="${INPUT_KIND:-all}"
 ASSETS="$(dirname "$0")/assets"
 AGENTS_DST="$HOME/.claude/agents"
 SKILLS_DST="$HOME/.claude/skills"
-REPORT="${TOOLS_MCP_RUN_DIR}/report.txt"
+REPORT="${TOOLS_RUN_DIR}/report.txt"
 
 : > "$REPORT"
 changed=false
@@ -49,7 +49,7 @@ fi
 
 [[ "$MODE" == "apply" ]] && applied=true
 
-cat > "${TOOLS_MCP_RUN_DIR}/outputs.json" << EOF
+cat > "${TOOLS_RUN_DIR}/outputs.json" << EOF
 {
   "changed": ${changed},
   "applied": ${applied}

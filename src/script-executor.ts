@@ -6,12 +6,12 @@ import { RunContext, readOutputs } from "./run-context.js";
 const execFileAsync = promisify(execFile);
 
 // Scripts erben NICHT das volle Prozess-env (sonst sind MCP-Secrets für jedes Script sichtbar).
-// Basis-Whitelist + Prefix-Whitelist; weitere Vars über TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH.
+// Basis-Whitelist + Prefix-Whitelist; weitere Vars über TOOLS_SCRIPT_ENV_PASSTHROUGH.
 const ENV_WHITELIST = new Set(["PATH", "HOME", "LANG", "TMPDIR", "TERM", "TZ", "USER", "SHELL"]);
 const ENV_PREFIX_WHITELIST = ["LC_"];
 
 export function baseEnv(): NodeJS.ProcessEnv {
-  const passthrough = (process.env.TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH ?? "")
+  const passthrough = (process.env.TOOLS_SCRIPT_ENV_PASSTHROUGH ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
@@ -42,9 +42,9 @@ export async function executeScript(
 ): Promise<ExecResult> {
   const env: NodeJS.ProcessEnv = {
     ...baseEnv(),
-    TOOLS_MCP_RUN_DIR: run.dir,
-    TOOLS_MCP_RUN_ID: run.runId,
-    TOOLS_MCP_INPUTS_JSON: JSON.stringify(inputs),
+    TOOLS_RUN_DIR: run.dir,
+    TOOLS_RUN_ID: run.runId,
+    TOOLS_INPUTS_JSON: JSON.stringify(inputs),
   };
 
   for (const [k, v] of Object.entries(inputs)) {
@@ -56,7 +56,7 @@ export async function executeScript(
       cwd: script.dir,
       env,
       maxBuffer: 10 * 1024 * 1024,
-      timeout: Number(process.env.TOOLS_MCP_SCRIPT_TIMEOUT_MS ?? 60000),
+      timeout: Number(process.env.TOOLS_SCRIPT_TIMEOUT_MS ?? 60000),
     });
     const outputs = await readOutputs(run.dir);
     return {

@@ -51,7 +51,7 @@ export async function loadScripts(scriptsRoot: string): Promise<LoadedScript[]> 
     const manifest = parseYaml(raw) as ScriptManifest;
 
     if (!manifest?.name || !manifest?.exec) {
-      console.error(`[tools-mcp] skipping ${dir}: manifest missing name/exec`);
+      console.error(`[tools-registry] skipping ${dir}: manifest missing name/exec`);
       continue;
     }
 

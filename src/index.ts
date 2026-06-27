@@ -16,14 +16,14 @@ const PROJECT_ROOT = join(__dirname, "..");
 // Script-Quelle: zentrale Registry (HTTP) ODER lokales Verzeichnis (Dev/Fallback).
 // Bei gesetzter REGISTRY_URL wird der Katalog in den lokalen Cache gespiegelt und
 // von dort geladen — Ausführung bleibt lokal, unabhängig vom SMB-Mount.
-const REGISTRY_URL = process.env.TOOLS_MCP_REGISTRY_URL;
-const LOCAL_SCRIPTS_DIR = process.env.TOOLS_MCP_SCRIPTS_DIR ?? join(PROJECT_ROOT, "scripts");
+const REGISTRY_URL = process.env.TOOLS_REGISTRY_URL;
+const LOCAL_SCRIPTS_DIR = process.env.TOOLS_SCRIPTS_DIR ?? join(PROJECT_ROOT, "scripts");
 const CACHE_DIR = registryCacheDir();
 const SOURCE_DIR = REGISTRY_URL ? CACHE_DIR : LOCAL_SCRIPTS_DIR;
-const POLL_MS = Number(process.env.TOOLS_MCP_POLL_MS ?? 5000);
+const POLL_MS = Number(process.env.TOOLS_POLL_MS ?? 5000);
 
 const server = new McpServer({
-  name: "tools-mcp",
+  name: "tools-registry",
   version: "0.1.0",
 });
 
@@ -41,7 +41,7 @@ function manifestSig(s: LoadedScript): string {
 function registerScript(script: LoadedScript): void {
   const { manifest } = script;
   if (RESERVED.has(manifest.name)) {
-    process.stderr.write(`[tools-mcp] skip reserved name: ${manifest.name}\n`);
+    process.stderr.write(`[tools-registry] skip reserved name: ${manifest.name}\n`);
     return;
   }
   const shape = inputsToZodShape(manifest.inputs ?? {});
@@ -80,7 +80,7 @@ function applyScripts(fresh: LoadedScript[]): void {
       handlesByName.get(name)?.remove();
       handlesByName.delete(name);
       scriptsByName.delete(name);
-      process.stderr.write(`[tools-mcp] -${name}\n`);
+      process.stderr.write(`[tools-registry] -${name}\n`);
     }
   }
 
@@ -89,13 +89,13 @@ function applyScripts(fresh: LoadedScript[]): void {
     const prev = scriptsByName.get(name);
     if (!prev) {
       registerScript(s);
-      process.stderr.write(`[tools-mcp] +${name}\n`);
+      process.stderr.write(`[tools-registry] +${name}\n`);
     } else if (manifestSig(prev) !== manifestSig(s)) {
       handlesByName.get(name)?.remove();
       handlesByName.delete(name);
       scriptsByName.delete(name);
       registerScript(s);
-      process.stderr.write(`[tools-mcp] ~${name}\n`);
+      process.stderr.write(`[tools-registry] ~${name}\n`);
     } else {
       // Manifest unverändert: nur die Script-Referenz (Pfade) aktualisieren.
       scriptsByName.set(name, s);
@@ -119,7 +119,7 @@ async function loadFresh(): Promise<LoadedScript[] | null> {
 
 // Alte Run-Dirs aufräumen (best effort, blockiert den Start nicht bei Fehlern).
 gcRuns()
-  .then((n) => n > 0 && process.stderr.write(`[tools-mcp] gc: ${n} alte run-dir(s) entfernt\n`))
+  .then((n) => n > 0 && process.stderr.write(`[tools-registry] gc: ${n} alte run-dir(s) entfernt\n`))
   .catch(() => {});
 
 // ── Initiales Laden ──────────────────────────────────────────────────────────
@@ -128,11 +128,11 @@ try {
   if (initial) applyScripts(initial);
 } catch (err) {
   // Registry beim Start nicht erreichbar → vorhandenen Cache verwenden.
-  process.stderr.write(`[tools-mcp] initial load failed (${String(err)}); falling back to cache ${CACHE_DIR}\n`);
+  process.stderr.write(`[tools-registry] initial load failed (${String(err)}); falling back to cache ${CACHE_DIR}\n`);
   try {
     applyScripts(await loadScripts(SOURCE_DIR));
   } catch {
-    process.stderr.write(`[tools-mcp] no scripts available yet\n`);
+    process.stderr.write(`[tools-registry] no scripts available yet\n`);
   }
 }
 
@@ -193,6 +193,6 @@ setInterval(async () => {
     const fresh = await loadFresh();
     if (fresh) applyScripts(fresh);
   } catch (err) {
-    process.stderr.write(`[tools-mcp] reload poll error: ${String(err)}\n`);
+    process.stderr.write(`[tools-registry] reload poll error: ${String(err)}\n`);
   }
 }, POLL_MS).unref();

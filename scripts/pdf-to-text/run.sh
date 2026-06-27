@@ -3,7 +3,7 @@
 # hoch und schreibt den extrahierten Text ins run_dir.
 set -euo pipefail
 
-: "${TOOLS_MCP_RUN_DIR:?TOOLS_MCP_RUN_DIR not set}"
+: "${TOOLS_RUN_DIR:?TOOLS_RUN_DIR not set}"
 : "${INPUT_PDF_PATH:?INPUT_PDF_PATH not set}"
 
 if [[ ! -f "$INPUT_PDF_PATH" ]]; then
@@ -11,14 +11,14 @@ if [[ ! -f "$INPUT_PDF_PATH" ]]; then
   exit 2
 fi
 
-SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3459}"
+SVC="${TOOLS_CONVERT_URL:-http://192.168.2.15:3459}"
 layout="false"
 [[ "${INPUT_LAYOUT:-}" == "true" ]] && layout="true"
 
-out="${TOOLS_MCP_RUN_DIR}/extracted.txt"
+out="${TOOLS_RUN_DIR}/extracted.txt"
 
 AUTH=()
-[[ -n "${TOOLS_MCP_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_MCP_CONVERT_TOKEN}")
+[[ -n "${TOOLS_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_CONVERT_TOKEN}")
 
 code=$(curl -sS "${AUTH[@]}" --data-binary @"$INPUT_PDF_PATH" \
   -w '%{http_code}' -o "$out" \
@@ -31,7 +31,7 @@ fi
 
 chars=$(wc -c < "$out" | tr -d ' ')
 
-cat > "${TOOLS_MCP_RUN_DIR}/outputs.json" <<EOF
+cat > "${TOOLS_RUN_DIR}/outputs.json" <<EOF
 {
   "text_file": "${out}",
   "char_count": ${chars}

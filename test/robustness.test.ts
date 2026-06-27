@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 
 // #4 GC alter Run-Dirs
 const root = join(tmpdir(), "gc-test-" + process.pid);
-process.env.TOOLS_MCP_RUNS_DIR = root;
+process.env.TOOLS_RUNS_DIR = root;
 const { gcRuns } = await import("../src/run-context.js");
 await mkdir(join(root, "old"), { recursive: true });
 await mkdir(join(root, "new"), { recursive: true });
@@ -19,7 +19,7 @@ assert.equal(await gcRuns(), 1, "ein altes run-dir entfernt");
 assert.deepEqual(await readdir(root), ["new"], "nur das junge bleibt");
 
 // #3 Script-Timeout
-process.env.TOOLS_MCP_SCRIPT_TIMEOUT_MS = "300";
+process.env.TOOLS_SCRIPT_TIMEOUT_MS = "300";
 const d = join(tmpdir(), "to-test-" + process.pid);
 await mkdir(d, { recursive: true });
 const exe = join(d, "run.sh");

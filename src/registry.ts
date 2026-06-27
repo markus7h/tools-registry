@@ -22,13 +22,13 @@ export interface RegistryCatalog {
   scripts: RegistryCatalogEntry[];
 }
 
-const DEFAULT_CACHE = join(homedir(), ".cache", "tools-mcp", "scripts");
+const DEFAULT_CACHE = join(homedir(), ".cache", "tools-registry", "scripts");
 const VERSION_FILE = ".registry-version";
 /** Erlaubte Script-Verzeichnisnamen — identisch zur Server-Validierung in registry-server.ts. */
 const NAME_RE = /^[A-Za-z0-9._-]+$/;
 
 export function registryCacheDir(): string {
-  return process.env.TOOLS_MCP_CACHE_DIR ?? DEFAULT_CACHE;
+  return process.env.TOOLS_CACHE_DIR ?? DEFAULT_CACHE;
 }
 
 /** Liegt `target` innerhalb von `dir` (oder ist `dir` selbst)? Schutz gegen `../`-Pfade. */
@@ -45,9 +45,9 @@ function withTimeout(ms: number): AbortSignal {
   return AbortSignal.timeout(ms);
 }
 
-/** Bearer-Header, falls TOOLS_MCP_REGISTRY_TOKEN gesetzt — sonst leeres Objekt. */
+/** Bearer-Header, falls TOOLS_REGISTRY_TOKEN gesetzt — sonst leeres Objekt. */
 function authHeaders(): Record<string, string> {
-  const token = process.env.TOOLS_MCP_REGISTRY_TOKEN;
+  const token = process.env.TOOLS_REGISTRY_TOKEN;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -108,7 +108,7 @@ export async function syncToCache(
     // Server-Katalog wird nicht blind vertraut: bösartige name/rel-Pfade dürfen nicht
     // außerhalb des Cache schreiben (sonst beliebige Dateien überschreibbar → RCE).
     if (!isValidScriptName(s.name)) {
-      process.stderr.write(`[tools-mcp] skip script with invalid name: ${s.name}\n`);
+      process.stderr.write(`[tools-registry] skip script with invalid name: ${s.name}\n`);
       continue;
     }
     const sdir = join(cacheDir, s.name);
@@ -116,7 +116,7 @@ export async function syncToCache(
     for (const rel of s.files) {
       const target = join(sdir, rel);
       if (!isInside(sdir, target)) {
-        process.stderr.write(`[tools-mcp] skip path traversal: ${s.name}/${rel}\n`);
+        process.stderr.write(`[tools-registry] skip path traversal: ${s.name}/${rel}\n`);
         continue;
       }
       const buf = await fetchFile(baseUrl, s.name, rel);
