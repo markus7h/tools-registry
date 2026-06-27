@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile, stat, readdir, rm } from "node:fs/promises"
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 
-const RUNS_ROOT = process.env.TOOLS_MCP_RUNS_DIR ?? "/tmp/tools-runs";
+const RUNS_ROOT = process.env.TOOLS_RUNS_DIR ?? "/tmp/tools-runs";
 
 export interface RunContext {
   runId: string;
@@ -22,7 +22,7 @@ export async function ensureRun(runId?: string): Promise<RunContext> {
  * /tmp/tools-runs nicht unbegrenzt wächst. Default-TTL: 24h.
  */
 export async function gcRuns(
-  maxAgeMs = Number(process.env.TOOLS_MCP_RUN_TTL_MS ?? 24 * 60 * 60 * 1000)
+  maxAgeMs = Number(process.env.TOOLS_RUN_TTL_MS ?? 24 * 60 * 60 * 1000)
 ): Promise<number> {
   const cutoff = Date.now() - maxAgeMs;
   let removed = 0;

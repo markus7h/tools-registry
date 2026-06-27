@@ -10,7 +10,7 @@ RUN npm ci --omit=dev
 
 COPY dist ./dist
 
-ENV TOOLS_MCP_SCRIPTS_DIR=/app/scripts
+ENV TOOLS_SCRIPTS_DIR=/app/scripts
 ENV PORT=3457
 ENV HOST=0.0.0.0
 

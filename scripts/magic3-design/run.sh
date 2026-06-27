@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${TOOLS_MCP_RUN_DIR:?TOOLS_MCP_RUN_DIR not set}"
+: "${TOOLS_RUN_DIR:?TOOLS_RUN_DIR not set}"
 
 MODE="${INPUT_MODE:-check}"
 TARGET="${INPUT_TARGET_DIR:-$HOME/.claude/skills/magic3-design}"
 ASSETS="$(dirname "$0")/assets"
-REPORT="${TOOLS_MCP_RUN_DIR}/report.txt"
+REPORT="${TOOLS_RUN_DIR}/report.txt"
 
 : > "$REPORT"
 changed=false
@@ -33,7 +33,7 @@ if [[ "$MODE" == "apply" ]]; then
   echo "-> geschrieben nach $TARGET" >> "$REPORT"
 fi
 
-cat > "${TOOLS_MCP_RUN_DIR}/outputs.json" << EOF
+cat > "${TOOLS_RUN_DIR}/outputs.json" << EOF
 {
   "target": "${TARGET}",
   "changed": ${changed},

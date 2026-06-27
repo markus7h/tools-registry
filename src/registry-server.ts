@@ -8,7 +8,7 @@ import { loadScripts } from "./script-loader.js";
 
 /**
  * Registry-Server: liefert das Script-Verzeichnis über HTTP aus, damit lokale
- * tools-mcp-Instanzen den Katalog ziehen und lokal cachen können — ein von SMB
+ * tools-registry-Instanzen den Katalog ziehen und lokal cachen können — ein von SMB
  * unabhängiger Pfad. Läuft zentral (Container auf einem Host). Quelle = das per
  * Bind-Mount eingehängte scripts/-Verzeichnis (kein Rebuild bei Script-Änderung).
  *
@@ -20,12 +20,12 @@ import { loadScripts } from "./script-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..");
-const SCRIPTS_ROOT = resolve(process.env.TOOLS_MCP_SCRIPTS_DIR ?? join(PROJECT_ROOT, "scripts"));
+const SCRIPTS_ROOT = resolve(process.env.TOOLS_SCRIPTS_DIR ?? join(PROJECT_ROOT, "scripts"));
 const PORT = Number(process.env.PORT ?? 3457);
 const HOST = process.env.HOST ?? "0.0.0.0";
 // ponytail: Shared-Bearer-Token statt Katalog-Signatur — genügt fürs vertrauenswürdige LAN.
 // Upgrade-Pfad = Ed25519-Signatur, falls die Registry je außerhalb des LAN exponiert wird.
-const TOKEN = process.env.TOOLS_MCP_REGISTRY_TOKEN;
+const TOKEN = process.env.TOOLS_REGISTRY_TOKEN;
 
 const NAME_RE = /^[A-Za-z0-9._-]+$/;
 

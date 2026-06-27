@@ -1,7 +1,7 @@
 # convert-service (Teil B)
 
 Zustandsloser Konvertier-Dienst: bündelt die schweren Helfer (Chromium, LibreOffice,
-WeasyPrint, pandoc, poppler) in **einem** Container, damit die tools-mcp-Clients nur `curl`
+WeasyPrint, pandoc, poppler) in **einem** Container, damit die tools-registry-Clients nur `curl`
 brauchen. Aufruf: rohe Datei im Request-Body → fertige Datei im Response-Body.
 
 ## Endpunkte

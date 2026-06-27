@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy des tools-mcp Konvertier-Dienstes (Teil B) auf den zentralen Host.
+# Deploy des tools-registry Konvertier-Dienstes (Teil B) auf den zentralen Host.
 #
 # scp't convert-service/ + compose nach $HOST:$REMOTE_DIR und baut/recreatet den
 # Container dort. Anders als der Registry-Server bündelt dieses Image die schweren

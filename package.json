@@ -1,10 +1,10 @@
 {
-  "name": "tools-mcp",
+  "name": "tools-registry",
   "version": "1.0.1",
   "description": "Local script-toolkit MCP server: registriert Scripts aus scripts/ als MCP-Tools, mit Run-Dirs und Pipeline-Runner.",
   "main": "dist/index.js",
   "bin": {
-    "tools-mcp": "./dist/index.js"
+    "tools-registry": "./dist/index.js"
   },
   "type": "module",
   "license": "MIT",

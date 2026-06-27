@@ -1,11 +1,11 @@
 name: dotclaude_install
 description: >
   Installiert/aktualisiert lokale Claude-Code-Assets (Agents und Skills) unter
-  ~/.claude/ aus der tools-mcp-Registry. Agents -> ~/.claude/agents/<name>.md,
+  ~/.claude/ aus der tools-registry-Registry. Agents -> ~/.claude/agents/<name>.md,
   Skills -> ~/.claude/skills/<name>/. mode=check zeigt nur Abweichungen,
   mode=apply schreibt die Dateien. kind filtert auf agents oder skills (default
   all). So lassen sich die hauseigenen Agents/Skills auf jedem System mit
-  tools-mcp ohne manuelles Kopieren ausrollen.
+  tools-registry ohne manuelles Kopieren ausrollen.
 exec: ./run.sh
 inputs:
   mode:
