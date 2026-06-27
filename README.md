@@ -1,4 +1,4 @@
-# tools-mcp
+# tools-registry
 
 MCP-Server, der kleine Scripts (`scripts/<name>/`) als MCP-Tools bereitstellt — mit
 Run-Dirs, Pipeline-Runner und einer **zentralen Script-Registry**, sodass neue/entfernte
@@ -7,14 +7,14 @@ Scripts **ohne Neustart** verfügbar werden.
 ## Architektur
 
 ```
-zentraler Host                              Client (Mac etc.)
-┌─────────────────────────┐                ┌───────────────────────────────┐
-│ tools-registry (Docker) │   HTTP GET     │ tools-mcp (stdio, lokal)      │
-│  serve scripts/ über     │ ◀───────────── │  - zieht Katalog, cacht lokal  │
-│  /registry + /file       │  Poll (5s)     │    ~/.cache/tools-mcp/scripts  │
-│  Quelle = Bind-Mount      │ ──────────────▶│  - registriert Tools live      │
-│  des Repo-scripts/        │   Bytes        │  - führt Scripts LOKAL aus     │
-└─────────────────────────┘                └───────────────────────────────┘
+zentraler Host                                 Client (Mac etc.)
+┌──────────────────────────────┐               ┌─────────────────────────────────┐
+│ Registry-Server (Docker)     │   HTTP GET    │ tools-registry-Client (stdio)   │
+│  = tools-registry-Container  │ ◀──────────── │  - zieht Katalog, cacht lokal   │
+│  serve scripts/ über         │  Poll (5s)    │    ~/.cache/tools-registry/...  │
+│  /registry + /file           │ ─────────────▶│  - registriert Tools live       │
+│  Quelle = Bind-Mount scripts/│   Bytes       │  - führt Scripts LOKAL aus      │
+└──────────────────────────────┘               └─────────────────────────────────┘
 ```
 
 - **Registry-Server** (`src/registry-server.ts`): liefert `scripts/` per HTTP aus. Läuft als
@@ -78,7 +78,7 @@ outputs:                   # optional, informativ
 ai_rem_entity: tool_mein_tool   # Konvention: korrespondierende ai-rem Tool-Entity
 ```
 
-Das Exec-Script bekommt pro Input `INPUT_<NAME>` als Env-Var sowie `TOOLS_MCP_RUN_DIR`
+Das Exec-Script bekommt pro Input `INPUT_<NAME>` als Env-Var sowie `TOOLS_RUN_DIR`
 (Schreib-Verzeichnis). Benannte Outputs werden über `<run_dir>/outputs.json` zurückgegeben.
 
 Auf dem zentralen Host editiert (per Netz-Mount oder direkt) → die Registry liefert die Änderung
@@ -112,8 +112,8 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 "tools": {
   "type": "stdio",
   "command": "node",
-  "args": ["/pfad/zu/tools-mcp/dist/index.js"],
-  "env": { "TOOLS_MCP_REGISTRY_URL": "http://<host>:3457" }
+  "args": ["/pfad/zu/tools-registry/dist/index.js"],
+  "env": { "TOOLS_REGISTRY_URL": "http://<host>:3457" }
 }
 ```
 
@@ -121,23 +121,23 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 
 | Variable | Wirkung |
 |---|---|
-| `TOOLS_MCP_REGISTRY_URL` | aktiviert den Registry-Client (Katalog-Quelle). Ungesetzt → lokales `scripts/`. |
-| `TOOLS_MCP_REGISTRY_TOKEN` | Shared Bearer-Token. Server: gesetzt → alle Endpoints außer `/health` verlangen `Authorization: Bearer <token>`. Client: schickt es mit. |
-| `TOOLS_MCP_SCRIPTS_DIR` | lokales Script-Verzeichnis (Dev-Fallback / Quelle des Registry-Servers). |
-| `TOOLS_MCP_CACHE_DIR` | lokaler Cache (Default `~/.cache/tools-mcp/scripts`). |
-| `TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH` | Komma-Liste zusätzlicher Env-Vars an Scripts (Default-Whitelist: `PATH, HOME, LANG, LC_*, TMPDIR, TERM, TZ, USER, SHELL`). |
-| `TOOLS_MCP_POLL_MS` | Poll-Intervall des Live-Reloads (Default `5000`). |
-| `TOOLS_MCP_RUNS_DIR` | Wurzel der Run-Dirs (Default `/tmp/tools-runs`). |
-| `TOOLS_MCP_SCRIPT_TIMEOUT_MS` | Hard-Timeout je Script-Ausführung (Default `60000`). |
-| `TOOLS_MCP_RUN_TTL_MS` | Max-Alter eines Run-Dirs; ältere werden beim Start entfernt (Default `86400000` = 24h). |
+| `TOOLS_REGISTRY_URL` | aktiviert den Registry-Client (Katalog-Quelle). Ungesetzt → lokales `scripts/`. |
+| `TOOLS_REGISTRY_TOKEN` | Shared Bearer-Token. Server: gesetzt → alle Endpoints außer `/health` verlangen `Authorization: Bearer <token>`. Client: schickt es mit. |
+| `TOOLS_SCRIPTS_DIR` | lokales Script-Verzeichnis (Dev-Fallback / Quelle des Registry-Servers). |
+| `TOOLS_CACHE_DIR` | lokaler Cache (Default `~/.cache/tools-registry/scripts`). |
+| `TOOLS_SCRIPT_ENV_PASSTHROUGH` | Komma-Liste zusätzlicher Env-Vars an Scripts (Default-Whitelist: `PATH, HOME, LANG, LC_*, TMPDIR, TERM, TZ, USER, SHELL`). |
+| `TOOLS_POLL_MS` | Poll-Intervall des Live-Reloads (Default `5000`). |
+| `TOOLS_RUNS_DIR` | Wurzel der Run-Dirs (Default `/tmp/tools-runs`). |
+| `TOOLS_SCRIPT_TIMEOUT_MS` | Hard-Timeout je Script-Ausführung (Default `60000`). |
+| `TOOLS_RUN_TTL_MS` | Max-Alter eines Run-Dirs; ältere werden beim Start entfernt (Default `86400000` = 24h). |
 | `PORT` / `HOST` | Registry-Server (Default `3457` / `0.0.0.0`). |
-| `TOOLS_MCP_CONVERT_URL` | Basis-URL des Konvertier-Dienstes für die curl-Wrapper (Default `http://192.168.2.15:3459`). Override braucht Eintrag in `TOOLS_MCP_SCRIPT_ENV_PASSTHROUGH`. |
-| `TOOLS_MCP_CONVERT_TOKEN` | Bearer-Token, das die Wrapper an den Dienst schicken (muss `CONVERT_TOKEN` des Dienstes entsprechen). |
+| `TOOLS_CONVERT_URL` | Basis-URL des Konvertier-Dienstes für die curl-Wrapper (Default `http://192.168.2.15:3459`). Override braucht Eintrag in `TOOLS_SCRIPT_ENV_PASSTHROUGH`. |
+| `TOOLS_CONVERT_TOKEN` | Bearer-Token, das die Wrapper an den Dienst schicken (muss `CONVERT_TOKEN` des Dienstes entsprechen). |
 | `CONVERT_TOKEN` / `CONVERT_PORT` | Konvertier-Dienst: optionales Bearer-Token (leer = aus) / Host-Port (Default `3459`; 3458 belegt). |
 
 > **Sicherheit:** Der Client führt Katalog-Scripts **lokal aus** — die Registry darf daher nur im
 > vertrauenswürdigen LAN erreichbar sein, nie auf einem öffentlichen Interface. `HOST` auf die
-> LAN-IP statt `0.0.0.0` binden und `TOOLS_MCP_REGISTRY_TOKEN` setzen. (Katalog-Integrität per
+> LAN-IP statt `0.0.0.0` binden und `TOOLS_REGISTRY_TOKEN` setzen. (Katalog-Integrität per
 > Signatur ist bewusst nicht implementiert — Upgrade-Pfad, falls die Registry je außerhalb des
 > LAN läuft.)
 

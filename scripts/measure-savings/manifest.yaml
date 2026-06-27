@@ -1,0 +1,23 @@
+name: measure_savings
+description: >
+  Misst die Token-Spar-Basis von ai-rem aus den lokalen Claude-Code-Transcripts
+  (~/.claude/projects/*/*.jsonl): Transcript-Fenster, Sessions/Tag, Recall-Quote
+  (Sessions die ai-rem nutzen), ai-rem-Tool-Calls und Retrieval-Payload
+  (chars / ~4 ≈ Tokens) je Recall-Session, plus Monatsaufschlüsselung. Agent-
+  Sidechains und Fast-leere Sessions werden übersprungen. Hinweis: Claude Code
+  räumt Transcripts nach ~30 Tagen weg — das Fenster deckt nur ab, was noch auf
+  der Platte liegt.
+exec: ./run.sh
+inputs:
+  projects_dir:
+    type: string
+    description: "Projects-Verzeichnis (default: ~/.claude/projects)."
+    required: false
+outputs:
+  report_file:
+    type: string
+    description: Pfad zum Klartext-Report.
+  summary:
+    type: string
+    description: Kurzfassung (inline) der Spar-Messung.
+ai_rem_entity: tool_measure_savings

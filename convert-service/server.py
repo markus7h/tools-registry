@@ -3,7 +3,7 @@
 
 Datei rein (roher Request-Body) -> Datei raus (Response-Body). Bündelt die
 schweren Helfer (chromium, libreoffice, weasyprint, pandoc, poppler), damit die
-tools-mcp-Clients nur curl brauchen.
+tools-registry-Clients nur curl brauchen.
 
 # ponytail: stdlib ThreadingHTTPServer reicht; echtes WSGI/uvicorn erst wenn Last es verlangt.
 """

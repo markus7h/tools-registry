@@ -3,9 +3,7 @@ set -euo pipefail
 
 : "${TOOLS_RUN_DIR:?TOOLS_RUN_DIR not set}"
 
-SCOPE="${INPUT_SCOPE:-all}"
-
-args=(--scope "$SCOPE" --run-dir "$TOOLS_RUN_DIR")
+args=(--run-dir "$TOOLS_RUN_DIR")
 [[ -n "${INPUT_PROJECTS_DIR:-}" ]] && args+=(--projects-dir "$INPUT_PROJECTS_DIR")
 
-exec python3 "$(dirname "$0")/report.py" "${args[@]}"
+exec python3 "$(dirname "$0")/measure.py" "${args[@]}"

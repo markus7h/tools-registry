@@ -3,7 +3,7 @@
 # speichert die zurückkommende PDF. Schwere Tools (Chromium) leben im Dienst.
 set -euo pipefail
 
-: "${TOOLS_MCP_RUN_DIR:?TOOLS_MCP_RUN_DIR not set}"
+: "${TOOLS_RUN_DIR:?TOOLS_RUN_DIR not set}"
 : "${INPUT_HTML_PATH:?INPUT_HTML_PATH not set}"
 
 if [[ ! -f "$INPUT_HTML_PATH" ]]; then
@@ -11,7 +11,7 @@ if [[ ! -f "$INPUT_HTML_PATH" ]]; then
   exit 2
 fi
 
-SVC="${TOOLS_MCP_CONVERT_URL:-http://192.168.2.15:3459}"
+SVC="${TOOLS_CONVERT_URL:-http://192.168.2.15:3459}"
 theme="${INPUT_THEME:-none}"
 landscape="${INPUT_LANDSCAPE:-false}"
 wait_ms="${INPUT_WAIT_MS:-4000}"
@@ -24,7 +24,7 @@ fi
 mkdir -p "$(dirname "$pdf_out")"
 
 AUTH=()
-[[ -n "${TOOLS_MCP_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_MCP_CONVERT_TOKEN}")
+[[ -n "${TOOLS_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_CONVERT_TOKEN}")
 
 code=$(curl -sS "${AUTH[@]}" --data-binary @"$INPUT_HTML_PATH" \
   -w '%{http_code}' -o "$pdf_out" \
@@ -37,7 +37,7 @@ fi
 
 if size=$(stat -c%s "$pdf_out" 2>/dev/null); then :; else size=$(stat -f%z "$pdf_out"); fi
 
-cat > "${TOOLS_MCP_RUN_DIR}/outputs.json" <<EOF
+cat > "${TOOLS_RUN_DIR}/outputs.json" <<EOF
 {
   "pdf_path": "${pdf_out}",
   "size_bytes": ${size}
