@@ -1,0 +1,12 @@
+{
+  "name": "playwright",
+  "description": "Browser-Automation (npx, portabel)",
+  "version": "1.0.0",
+  "author": { "name": "Markus" },
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}
