@@ -187,6 +187,38 @@ registrierender Block:
 Absoluter Pfad (kein `~`), da der Hook via `/bin/sh` läuft. `settings-sync` (`mode=check`)
 meldet das fehlende `UserPromptSubmit`-Event fortlaufend, bis registriert.
 
+## MCP-Katalog (Plugin-Marketplace)
+
+Dieses Repo ist zusätzlich ein nativer **Claude-Code-Plugin-Marketplace** — ein Katalog
+aller eigenen MCP-Server, aus dem sich jeder Server mit einem Kommando in den passenden
+Scope installieren lässt. Struktur getrennt vom Script-Registry-Teil:
+
+- `.claude-plugin/marketplace.json` — der Katalog (Marketplace-Name `tools-registry`).
+- `plugins/<name>/.claude-plugin/plugin.json` — ein Plugin = ein MCP-Server. Hosts, Tokens
+  und Pfade sind ausschließlich `userConfig`-Platzhalter → **keine Secrets im Repo**.
+
+Der Katalog ersetzt nicht die Regel „MCP minimal pro Repo": global bleibt schlank,
+projektspezifische Server werden per `--scope project` on-demand gezogen.
+
+```bash
+claude plugin marketplace add markus7h/tools-registry   # oder lokaler Pfad
+claude plugin install playwright@tools-registry --scope project      # ohne Secret
+```
+
+Server mit Secret beziehen den Token zur Install-Zeit aus [mykeyvault](https://github.com/markus7h/mykeyvault)
+(`vault_write_secret` schreibt ihn in eine chmod-600-Datei, gibt nur den Pfad zurück):
+
+```bash
+# im Claude-Chat: vault_write_secret("<item>") -> $P
+claude plugin install ai-rem@tools-registry --scope user \
+  --config url=https://<host>/mcp --config token="$(cat "$P")"
+rm -f "$P"
+```
+
+`sensitive: true`-Felder landen im System-Keychain, nicht in `settings.json`. Neuen Server
+ergänzen: `plugins/<name>/.claude-plugin/plugin.json` anlegen + Eintrag in `marketplace.json`,
+dann `claude plugin marketplace update tools-registry`.
+
 ## Build
 
 ```bash

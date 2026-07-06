@@ -1,0 +1,12 @@
+{
+  "name": "tools-registry",
+  "owner": { "name": "Markus" },
+  "plugins": [
+    { "name": "ai-rem",       "source": "./plugins/ai-rem",       "description": "Knowledge-Graph-Memory (HTTP)" },
+    { "name": "tools",        "source": "./plugins/tools",        "description": "tools-registry Script-Runner (stdio)" },
+    { "name": "mykeyvault",   "source": "./plugins/mykeyvault",   "description": "Bitwarden-Vault-Zugriff (stdio)" },
+    { "name": "paperless",    "source": "./plugins/paperless",    "description": "Paperless-ngx API (stdio)" },
+    { "name": "paperless-ai", "source": "./plugins/paperless-ai", "description": "Paperless-AI (stdio)" },
+    { "name": "playwright",   "source": "./plugins/playwright",   "description": "Browser-Automation (npx)" }
+  ]
+}

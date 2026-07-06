@@ -1,0 +1,21 @@
+{
+  "name": "mykeyvault",
+  "description": "Bitwarden-Vault-Zugriff (stdio)",
+  "version": "1.0.0",
+  "author": { "name": "Markus" },
+  "userConfig": {
+    "dist":  { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten mcp/dist/index.js", "default": "/home/markus/Code/mykeyvault/mcp/dist/index.js" },
+    "url":   { "type": "string", "title": "VAULT_API_URL", "description": "URL der vault-api" },
+    "token": { "type": "string", "title": "VAULT_API_TOKEN", "sensitive": true }
+  },
+  "mcpServers": {
+    "mykeyvault": {
+      "command": "node",
+      "args": ["${user_config.dist}"],
+      "env": {
+        "VAULT_API_URL": "${user_config.url}",
+        "VAULT_API_TOKEN": "${user_config.token}"
+      }
+    }
+  }
+}
