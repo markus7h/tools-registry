@@ -165,8 +165,27 @@ Endpoint + Bearer-Token werden aus `AI_REM_ENDPOINT` bzw. `~/.claude.json`
 ```
 
 Der Hook ist fail-silent (nie `exit != 0`) — bei Fehler/leerem Prompt/kein Treffer
-bleibt er still und blockiert den Prompt nie. Registrierung in `~/.claude/settings.json`
-unter `hooks.UserPromptSubmit`.
+bleibt er still und blockiert den Prompt nie.
+
+### Ausrollen & Registrieren
+
+`dotclaude_install` (kind `hooks` oder `all`, `mode=apply`) kopiert `tool-discovery.sh`
+an den **stabilen Pfad** `~/.claude/hooks/tool-discovery.sh` — so hängt `settings.json`
+nicht mehr am Repo-Checkout-Pfad (`/Volumes` vs `/home`, Repo-Umbenennungen).
+
+Die **Registrierung** in `~/.claude/settings.json` unter `hooks.UserPromptSubmit` bleibt
+ein einmaliger manueller Schritt (der Installer editiert bewusst keine fremden Hook-Arrays).
+Ist der Hook deployt, aber noch nicht registriert, gibt der Lauf einen prominenten
+`AKTION ERFORDERLICH`-Block mit fertigem JSON aus (`registration_pending: true`). Zu
+registrierender Block:
+
+```json
+{ "matcher": "", "hooks": [ { "type": "command",
+  "command": "/Users/<user>/.claude/hooks/tool-discovery.sh", "timeout": 10000 } ] }
+```
+
+Absoluter Pfad (kein `~`), da der Hook via `/bin/sh` läuft. `settings-sync` (`mode=check`)
+meldet das fehlende `UserPromptSubmit`-Event fortlaufend, bis registriert.
 
 ## Build
 
