@@ -1,11 +1,13 @@
 name: dotclaude_install
 description: >
-  Installiert/aktualisiert lokale Claude-Code-Assets (Agents und Skills) unter
-  ~/.claude/ aus der tools-registry-Registry. Agents -> ~/.claude/agents/<name>.md,
-  Skills -> ~/.claude/skills/<name>/. mode=check zeigt nur Abweichungen,
-  mode=apply schreibt die Dateien. kind filtert auf agents oder skills (default
-  all). So lassen sich die hauseigenen Agents/Skills auf jedem System mit
-  tools-registry ohne manuelles Kopieren ausrollen.
+  Installiert/aktualisiert lokale Claude-Code-Assets (Agents, Skills und Hooks)
+  unter ~/.claude/ aus der tools-registry-Registry. Agents -> ~/.claude/agents/<name>.md,
+  Skills -> ~/.claude/skills/<name>/, Hooks -> ~/.claude/hooks/ (tool-discovery.sh
+  an stabilen Pfad). mode=check zeigt nur Abweichungen, mode=apply schreibt die
+  Dateien. kind filtert auf agents, skills oder hooks (default all). Der Hook wird
+  nur deployt, nicht in settings.json registriert - fehlt der Eintrag, gibt der Lauf
+  einen AKTION-ERFORDERLICH-Block aus (registration_pending). So lassen sich die
+  hauseigenen Assets auf jedem System ohne manuelles Kopieren ausrollen.
 exec: ./run.sh
 inputs:
   mode:
@@ -14,7 +16,7 @@ inputs:
     required: false
   kind:
     type: string
-    description: "all (default), agents oder skills - schraenkt ein, was ausgeliefert wird"
+    description: "all (default), agents, skills oder hooks - schraenkt ein, was ausgeliefert wird"
     required: false
 outputs:
   changed:
@@ -23,4 +25,7 @@ outputs:
   applied:
     type: boolean
     description: Ob im apply-Modus geschrieben wurde.
+  registration_pending:
+    type: boolean
+    description: Hook deployt, aber noch nicht in settings.json registriert (manueller Schritt offen).
 ai_rem_entity: tool_dotclaude_install
