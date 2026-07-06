@@ -1,0 +1,17 @@
+{
+  "name": "tools",
+  "description": "tools-registry Script-Runner (stdio)",
+  "version": "1.0.0",
+  "author": { "name": "Markus" },
+  "userConfig": {
+    "dist":         { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten dist/index.js des tools-registry-Clients", "default": "/home/markus/Code/tools-registry/dist/index.js" },
+    "registry_url": { "type": "string", "title": "TOOLS_REGISTRY_URL", "description": "URL des Registry-Servers" }
+  },
+  "mcpServers": {
+    "tools": {
+      "command": "node",
+      "args": ["${user_config.dist}"],
+      "env": { "TOOLS_REGISTRY_URL": "${user_config.registry_url}" }
+    }
+  }
+}

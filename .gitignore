@@ -6,3 +6,5 @@ dist/
 .deploy.env
 *.log
 .DS_Store
+__pycache__/
+.gitignore

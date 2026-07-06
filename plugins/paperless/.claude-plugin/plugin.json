@@ -1,0 +1,21 @@
+{
+  "name": "paperless",
+  "description": "Paperless-ngx API (stdio)",
+  "version": "1.0.0",
+  "author": { "name": "Markus" },
+  "userConfig": {
+    "dist":  { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten paperless-mcp dist/index.js", "default": "/home/markus/mystorage/myCode/github/paperless-mcp/dist/index.js" },
+    "url":   { "type": "string", "title": "PAPERLESS_URL", "description": "z.B. https://paperless" },
+    "token": { "type": "string", "title": "PAPERLESS_TOKEN", "sensitive": true }
+  },
+  "mcpServers": {
+    "paperless": {
+      "command": "node",
+      "args": ["${user_config.dist}"],
+      "env": {
+        "PAPERLESS_URL": "${user_config.url}",
+        "PAPERLESS_TOKEN": "${user_config.token}"
+      }
+    }
+  }
+}

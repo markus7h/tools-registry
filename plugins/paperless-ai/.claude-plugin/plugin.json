@@ -1,0 +1,15 @@
+{
+  "name": "paperless-ai",
+  "description": "Paperless-AI (stdio)",
+  "version": "1.0.0",
+  "author": { "name": "Markus" },
+  "userConfig": {
+    "dist": { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten paperless-ai mcp/dist/index.js", "default": "/home/markus/mystorage/myCode/github/paperless-ai/mcp/dist/index.js" }
+  },
+  "mcpServers": {
+    "paperless-ai": {
+      "command": "node",
+      "args": ["${user_config.dist}"]
+    }
+  }
+}
