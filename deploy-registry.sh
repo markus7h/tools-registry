@@ -7,16 +7,18 @@
 # sodass Script-Änderungen ohne Rebuild live ausgeliefert werden.
 #
 # Konfiguration via Env oder optionaler untracked .deploy.env:
-#   HOST=<ssh-host> REMOTE_DIR=<pfad> SCRIPTS_DIR=<host-pfad> ./deploy-registry.sh
+#   HOST=<ssh-host> REGISTRY_REMOTE_DIR=<pfad> SCRIPTS_DIR=<host-pfad> ./deploy-registry.sh
+# Wichtig: eigenes Verzeichnis je Dienst (siehe deploy-convert.sh) — nie dasselbe
+# REMOTE_DIR für Registry und Convert verwenden.
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
-# Optionale lokale Defaults (untracked, z.B. HOST=..., REMOTE_DIR=..., SCRIPTS_DIR=...).
+# Optionale lokale Defaults (untracked, z.B. HOST=..., REGISTRY_REMOTE_DIR=..., SCRIPTS_DIR=...).
 [ -f ./.deploy.env ] && source ./.deploy.env
 
 HOST="${HOST:?HOST nicht gesetzt — SSH-Zielhost der Registry (Env oder .deploy.env)}"
-REMOTE_DIR="${REMOTE_DIR:-tools-registry}"
+REMOTE_DIR="${REGISTRY_REMOTE_DIR:-${REMOTE_DIR:-tools-registry}}"
 # Absoluter Pfad des Repo-scripts/-Verzeichnisses AUF DEM HOST. Pflicht, weil der
 # compose-Default ./scripts (relativ zu REMOTE_DIR) leer ist → Registry liefert
 # leeren Katalog. Wird unten als .env in REMOTE_DIR geschrieben, damit compose ihn mountet.

@@ -6,14 +6,18 @@
 # Helfer (chromium/libreoffice/weasyprint/pandoc/poppler) selbst — kein Bind-Mount nötig.
 #
 # Konfiguration via Env oder optionaler untracked .deploy.env:
-#   HOST=<ssh-host> REMOTE_DIR=<pfad> [CONVERT_TOKEN=<token>] ./deploy-convert.sh
+#   HOST=<ssh-host> CONVERT_REMOTE_DIR=<pfad> [CONVERT_TOKEN=<token>] ./deploy-convert.sh
+# Wichtig: eigenes Verzeichnis je Dienst — Registry (Teil A) und Convert (Teil B)
+# schreiben beide eine docker-compose.yml (+ .env) und würden sich in einem
+# gemeinsamen REMOTE_DIR gegenseitig überschreiben; Compose meldet den jeweils
+# anderen Container dann als Orphan.
 set -euo pipefail
 
 cd "$(dirname "$0")"
 [ -f ./.deploy.env ] && source ./.deploy.env
 
 HOST="${HOST:?HOST nicht gesetzt — SSH-Zielhost (Env oder .deploy.env)}"
-REMOTE_DIR="${REMOTE_DIR:-tools-convert}"
+REMOTE_DIR="${CONVERT_REMOTE_DIR:-tools-convert}"
 
 echo "→ scp convert-service nach ${HOST}:${REMOTE_DIR}"
 ssh "${HOST}" "mkdir -p ${REMOTE_DIR}/convert-service"
