@@ -10,7 +10,7 @@ brauchen. Aufruf: rohe Datei im Request-Body → fertige Datei im Response-Body.
 |---|---|---|---|
 | `GET /health` | – | `ok` | – |
 | `POST /html_to_pdf` | HTML | PDF | `theme=none\|magic3`, `landscape=true\|false`, `wait_ms=<int>` |
-| `POST /md_to_pdf` | Markdown | PDF | `design=collana\|magicM` |
+| `POST /md_to_pdf` | Markdown | PDF | `design=collana\|magicM\|magic3` |
 | `POST /docx_to_pdf` | .docx | PDF | – (Metadaten in `X-Converter`, `X-Warning`) |
 | `POST /pdf_to_text` | PDF | Text | `layout=true\|false` |
 

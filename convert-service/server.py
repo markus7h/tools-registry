@@ -162,6 +162,23 @@ DESIGNS = {
 """,
 }
 
+# magic3: Basis ist die geteilte theme.css (identisch zum Skill magic3-design),
+# plus md_to_pdf-spezifische Zusätze (Titelblock, Code, Zitate, breite Tabellen).
+DESIGNS["magic3"] = THEME_CSS + """
+  body { font-size: 10.5pt; }
+  .title-block.design-magic3 { margin: 0 0 22pt 0; padding-bottom: 12pt; border-bottom: 2px solid #388E3C; }
+  .title-block.design-magic3 .doc-title { font-size: 22pt; font-weight: 700; color: #000000; line-height: 1.25; margin-bottom: 4pt; }
+  .title-block.design-magic3 .doc-subtitle { font-size: 12.5pt; color: #666666; margin-bottom: 6pt; }
+  .title-block.design-magic3 .doc-meta { font-size: 10pt; color: #666666; }
+  code { font-family: 'Courier New', monospace; font-size: 9pt; background: #F5F5F5; padding: 1px 4px; border-radius: 2px; }
+  pre { background: #F8F8F8; border: 1px solid #ECECEC; padding: 10px 12px; font-size: 9pt; white-space: pre-wrap; }
+  pre code { background: transparent; padding: 0; }
+  blockquote { border-left: 4px solid #388E3C; margin: 10px 0; padding: 4px 12px; color: #666666; background: transparent; }
+  hr { border: none; border-top: 1px solid #ECECEC; margin: 18px 0; }
+  .wide-table table { font-size: 8.5pt; }
+  .wide-table th, .wide-table td { padding: 4px 7px; }
+"""
+
 
 def _wrap_wide_tables(html, min_cols=5):
     def repl(m):
@@ -200,7 +217,8 @@ def md_to_pdf(body: bytes, q) -> tuple[bytes, dict]:
     import markdown
     design = (q.get("design", ["collana"])[0] or "collana")
     if design not in DESIGNS:
-        design = "collana"
+        # kein stiller Fallback: falsches Design soll auffallen, nicht Collana rendern
+        raise ValueError(f"unbekanntes design '{design}' — verfügbar: {', '.join(sorted(DESIGNS))}")
     md_text = body.decode("utf-8", errors="replace")
 
     frontmatter = {}

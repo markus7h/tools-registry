@@ -1,5 +1,5 @@
 name: md_to_pdf
-description: Konvertiert eine Markdown-Datei in eine formatierte PDF via Python markdown + WeasyPrint (im zentralen Konvertier-Dienst). Designs `collana` (oranges b-imtec, default) und `magicM` (LaTeX-Serif, Seitennummerierung). Gibt den PDF-Pfad zurück.
+description: Konvertiert eine Markdown-Datei in eine formatierte PDF via Python markdown + WeasyPrint (im zentralen Konvertier-Dienst). Designs `collana` (oranges b-imtec, default), `magicM` (LaTeX-Serif, Seitennummerierung) und `magic3` (IBCS/SUCCESS, hell, grüner Akzent #388E3C). Gibt den PDF-Pfad zurück.
 exec: ./run.sh
 inputs:
   md_path:
@@ -12,7 +12,7 @@ inputs:
     required: false
   design:
     type: string
-    description: "Design-Variante: `collana` (default, oranges b-imtec/Sans-Serif, Akzent #fa4a05) oder `magicM` (LaTeX-inspiriert, Serif mit Computer-Modern-Stack, mittige Seitennummerierung im Footer, Booktabs-Tabellen, justified mit Hyphenation)."
+    description: "Design-Variante: `collana` (default, oranges b-imtec/Sans-Serif, Akzent #fa4a05), `magicM` (LaTeX-inspiriert, Serif mit Computer-Modern-Stack, mittige Seitennummerierung im Footer, Booktabs-Tabellen, justified mit Hyphenation) oder `magic3` (hauseigenes IBCS/SUCCESS-Design: hell, Source Sans 3, grüner Akzent #388E3C, Seitennummerierung)."
     required: false
 outputs:
   pdf_path:
