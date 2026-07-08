@@ -1,6 +1,6 @@
 {
   "name": "tools-registry",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Local script-toolkit MCP server: registriert Scripts aus scripts/ als MCP-Tools, mit Run-Dirs und Pipeline-Runner.",
   "main": "dist/index.js",
   "bin": {
