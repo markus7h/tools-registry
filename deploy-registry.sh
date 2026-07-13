@@ -37,8 +37,11 @@ scp -q docker-compose.registry.yml "${HOST}:${REMOTE_DIR}/docker-compose.yml"
 ssh "${HOST}" "rm -rf ${REMOTE_DIR}/dist"
 scp -qr dist "${HOST}:${REMOTE_DIR}/dist"
 
-echo "→ .env (SCRIPTS_DIR) auf ${HOST}:${REMOTE_DIR} schreiben"
+echo "→ .env (SCRIPTS_DIR, TOOLS_REGISTRY_TOKEN) auf ${HOST}:${REMOTE_DIR} schreiben"
 ssh "${HOST}" "cd ${REMOTE_DIR} && printf 'SCRIPTS_DIR=%s\n' '${SCRIPTS_DIR}' > .env"
+if [ -n "${TOOLS_REGISTRY_TOKEN:-}" ]; then
+  ssh "${HOST}" "cd ${REMOTE_DIR} && printf 'TOOLS_REGISTRY_TOKEN=%s\n' '${TOOLS_REGISTRY_TOKEN}' >> .env"
+fi
 
 echo "→ docker compose up -d --build on ${HOST}"
 ssh "${HOST}" "cd ${REMOTE_DIR} && docker compose up -d --build" 2>&1 \

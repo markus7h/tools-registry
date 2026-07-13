@@ -202,7 +202,7 @@ projektspezifische Server werden per `--scope project` on-demand gezogen.
 
 ```bash
 claude plugin marketplace add markus7h/tools-registry   # oder lokaler Pfad
-claude plugin install playwright@tools-registry --scope project      # ohne Secret
+claude plugin install doc-graph@tools-registry --scope project       # ohne Secret
 ```
 
 Server mit Secret beziehen den Token zur Install-Zeit aus [mykeyvault](https://github.com/markus7h/mykeyvault)
@@ -241,7 +241,8 @@ Der `tools`-MCP-Server läuft als Plugin `tools@tools-registry`, **nicht** als d
 claude plugin marketplace add /pfad/zum/tools-registry-repo
 claude plugin install tools@tools-registry --scope user \
   --config dist=/pfad/zur/dist/index.js \
-  --config registry_url=http://<registry-host>:3457
+  --config registry_url=http://<registry-host>:3457 \
+  --config token=<TOOLS_REGISTRY_TOKEN>   # muss dem Server-Token entsprechen
 claude mcp remove tools -s user   # alten Direkt-Eintrag entfernen, sonst läuft der Server doppelt
 ```
 
@@ -252,6 +253,11 @@ npm run gen:skill                              # oder ./deploy-registry.sh (mach
 git commit -am "…"
 claude plugin update tools@tools-registry      # neue Session → Skill + Server aktuell
 ```
+
+> **Zweit-Klon beachten:** Zeigt die Plugin-Config `dist` auf einen anderen Checkout als den
+> Dev-Klon (z. B. lokale Platte statt Netz-Mount), läuft der Server-Code von dort. Nach jeder
+> `src/`-Änderung diesen Klon nachziehen, sonst driftet er still:
+> `git -C <zweit-klon> pull && npm --prefix <zweit-klon> install && npm --prefix <zweit-klon> run build`
 
 ## Build
 
