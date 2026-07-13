@@ -24,6 +24,9 @@ REMOTE_DIR="${REGISTRY_REMOTE_DIR:-${REMOTE_DIR:-tools-registry}}"
 # leeren Katalog. Wird unten als .env in REMOTE_DIR geschrieben, damit compose ihn mountet.
 SCRIPTS_DIR="${SCRIPTS_DIR:?SCRIPTS_DIR nicht gesetzt — absoluter Host-Pfad zu tools-registry/scripts (Env oder .deploy.env)}"
 
+echo "→ gen:skill (SKILL.md aus scripts/*/manifest.yaml)"
+npm run gen:skill >/dev/null
+
 echo "→ build (tsc)"
 npm run build >/dev/null
 

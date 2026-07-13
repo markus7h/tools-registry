@@ -1,7 +1,7 @@
 {
   "name": "tools",
-  "description": "tools-registry Script-Runner (stdio)",
-  "version": "1.0.0",
+  "description": "tools-registry Script-Runner (stdio) + Skill tools-registry (Tool-Katalog als Trigger)",
+  "version": "1.1.0",
   "author": { "name": "Markus" },
   "userConfig": {
     "dist":         { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten dist/index.js des tools-registry-Clients", "default": "/home/markus/Code/tools-registry/dist/index.js" },

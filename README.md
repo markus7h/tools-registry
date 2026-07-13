@@ -219,6 +219,18 @@ rm -f "$P"
 ergänzen: `plugins/<name>/.claude-plugin/plugin.json` anlegen + Eintrag in `marketplace.json`,
 dann `claude plugin marketplace update tools-registry`.
 
+### Skill `tools-registry` (Tool-Katalog als Trigger)
+
+Das Plugin `tools` liefert zusätzlich den Skill `tools-registry` mit
+(`plugins/tools/skills/tools-registry/SKILL.md`): ein generierter Katalog aller
+registrierten Tools, dessen Skill-Description bei jedem Prompt gematcht wird — Claude wird
+so aktiv an die vorhandenen Tools erinnert, statt Bash-/Ad-hoc-Eigenlösungen zu bauen.
+
+Die SKILL.md wird **nicht von Hand gepflegt**, sondern aus `scripts/*/manifest.yaml`
+generiert (`npm run gen:skill`, läuft automatisch in `deploy-registry.sh`). Nach einer
+Manifest-Änderung: generieren, committen, dann verteilt `claude plugin update` den Skill
+mit dem Plugin.
+
 ## Build
 
 ```bash
