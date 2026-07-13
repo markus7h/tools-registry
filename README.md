@@ -231,6 +231,28 @@ generiert (`npm run gen:skill`, läuft automatisch in `deploy-registry.sh`). Nac
 Manifest-Änderung: generieren, committen, dann verteilt `claude plugin update` den Skill
 mit dem Plugin.
 
+### Setup: tools-Server als Plugin (statt direktem MCP-Eintrag)
+
+Der `tools`-MCP-Server läuft als Plugin `tools@tools-registry`, **nicht** als direkter
+`mcpServers`-Eintrag in `~/.claude.json` — nur so wird der Skill mitverteilt. Einrichtung
+(Marketplace vom lokalen Dev-Klon, dann ist kein Push für Updates nötig):
+
+```bash
+claude plugin marketplace add /pfad/zum/tools-registry-repo
+claude plugin install tools@tools-registry --scope user \
+  --config dist=/pfad/zur/dist/index.js \
+  --config registry_url=http://<registry-host>:3457
+claude mcp remove tools -s user   # alten Direkt-Eintrag entfernen, sonst läuft der Server doppelt
+```
+
+Update-Flow nach Script-/Manifest-Änderung:
+
+```bash
+npm run gen:skill                              # oder ./deploy-registry.sh (macht es mit)
+git commit -am "…"
+claude plugin update tools@tools-registry      # neue Session → Skill + Server aktuell
+```
+
 ## Build
 
 ```bash
