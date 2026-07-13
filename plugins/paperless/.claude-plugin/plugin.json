@@ -1,7 +1,7 @@
 {
   "name": "paperless",
   "description": "Paperless-ngx API (stdio)",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": { "name": "Markus" },
   "userConfig": {
     "dist":  { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten paperless-mcp dist/index.js", "default": "/home/markus/mystorage/myCode/github/paperless-mcp/dist/index.js" },
