@@ -70,6 +70,8 @@ th, td { padding: .4rem .6rem; border-bottom: 1px solid var(--line-fine); }
 th { color: var(--ink-muted); font-weight: 600; text-align: left; }
 td.num, th.num, td:not(:first-child), th:not(:first-child) { text-align: right;
   font-variant-numeric: tabular-nums; }
+/* Zahlenspalten (Markdown --:) nicht umbrechen — verhindert 2-Zeilen-Effekt bei schmalem Inhalt */
+th[style*="text-align: right"], td[style*="text-align: right"] { white-space: nowrap; }
 
 /* Bewertung in Zahlen/Deltas */
 .good, .pos { color: var(--accent-strong); }

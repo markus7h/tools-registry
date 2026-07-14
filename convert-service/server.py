@@ -107,6 +107,7 @@ DESIGNS = {
   th { background: #bc3704; color: #fff; padding: 7px 10px; text-align: left; }
   td { padding: 6px 10px; border-bottom: 1px solid #e5e7eb; }
   tr:nth-child(even) td { background: #f9fafb; }
+  th[style*="text-align: right"], td[style*="text-align: right"] { white-space: nowrap; }
   blockquote { border-left: 3px solid #fa4a05; margin: 10px 0; padding: 6px 14px; color: #4b5563; font-style: italic; background: #fef1ea; }
   hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
   ul, ol { margin: 6px 0; padding-left: 22px; }
