@@ -1,17 +1,30 @@
 {
   "name": "ai-rem",
   "description": "Knowledge-Graph-Memory (HTTP)",
-  "version": "1.0.0",
-  "author": { "name": "Markus" },
+  "version": "1.0.1",
+  "author": {
+    "name": "Markus"
+  },
   "userConfig": {
-    "url":   { "type": "string", "title": "ai-rem URL", "description": "URL des ai-rem-Servers, z.B. https://<host>/mcp" },
-    "token": { "type": "string", "title": "Bearer Token", "sensitive": true }
+    "url": {
+      "type": "string",
+      "title": "ai-rem URL",
+      "description": "URL des ai-rem-Servers, z.B. https://<host>/mcp"
+    },
+    "token": {
+      "type": "string",
+      "title": "Bearer Token",
+      "sensitive": true,
+      "description": "Bearer-Token für den ai-rem Knowledge-Graph (ai-rem token)"
+    }
   },
   "mcpServers": {
     "ai-rem": {
       "type": "http",
       "url": "${user_config.url}",
-      "headers": { "Authorization": "Bearer ${user_config.token}" }
+      "headers": {
+        "Authorization": "Bearer ${user_config.token}"
+      }
     }
   }
 }

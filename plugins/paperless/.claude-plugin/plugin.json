@@ -1,17 +1,35 @@
 {
   "name": "paperless",
   "description": "Paperless-ngx API (stdio)",
-  "version": "1.1.0",
-  "author": { "name": "Markus" },
+  "version": "1.1.1",
+  "author": {
+    "name": "Markus"
+  },
   "userConfig": {
-    "dist":  { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten paperless-mcp dist/index.js", "default": "/home/markus/mystorage/myCode/github/paperless-mcp/dist/index.js" },
-    "url":   { "type": "string", "title": "PAPERLESS_URL", "description": "z.B. https://paperless" },
-    "token": { "type": "string", "title": "PAPERLESS_TOKEN", "sensitive": true }
+    "dist": {
+      "type": "string",
+      "title": "index.js Pfad",
+      "description": "Pfad zur gebauten paperless-mcp dist/index.js",
+      "default": "/home/markus/mystorage/myCode/github/paperless-mcp/dist/index.js"
+    },
+    "url": {
+      "type": "string",
+      "title": "PAPERLESS_URL",
+      "description": "z.B. https://paperless"
+    },
+    "token": {
+      "type": "string",
+      "title": "PAPERLESS_TOKEN",
+      "description": "API-Token aus Paperless-ngx (Einstellungen → Benutzer → Token)",
+      "sensitive": true
+    }
   },
   "mcpServers": {
     "paperless": {
       "command": "node",
-      "args": ["${user_config.dist}"],
+      "args": [
+        "${user_config.dist}"
+      ],
       "env": {
         "PAPERLESS_URL": "${user_config.url}",
         "PAPERLESS_TOKEN": "${user_config.token}"
