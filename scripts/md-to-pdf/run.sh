@@ -24,7 +24,7 @@ mkdir -p "$(dirname "$pdf_out")"
 AUTH=()
 [[ -n "${TOOLS_CONVERT_TOKEN:-}" ]] && AUTH=(-H "Authorization: Bearer ${TOOLS_CONVERT_TOKEN}")
 
-code=$(curl -sS "${AUTH[@]}" --data-binary @"$INPUT_MD_PATH" \
+code=$(curl -sS ${AUTH[@]+"${AUTH[@]}"} --data-binary @"$INPUT_MD_PATH" \
   -w '%{http_code}' -o "$pdf_out" \
   "$SVC/md_to_pdf?design=${design}")
 if [[ "$code" != "200" ]]; then
