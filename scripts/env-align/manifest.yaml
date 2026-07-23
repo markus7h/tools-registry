@@ -1,0 +1,38 @@
+name: env_align
+description: >
+  Gleicht Claude-Code-Plugins & Marketplaces eines Systems an eine Referenz an.
+  Referenz = zweites System (SSH-Alias), lokale settings.json oder Manifest-JSON.
+  Verglichen/synchronisiert werden enabledPlugins (aktivierte) und
+  extraKnownMarketplaces. mode=check zeigt den Diff, mode=apply registriert
+  fehlende Marketplaces und aktiviert fehlende Plugins (additiv; mit strict=true
+  Voll-Spiegel inkl. Deaktivieren lokaler Extras). Aenderungen greifen nach
+  Claude-Code-Neustart.
+exec: ./run.sh
+inputs:
+  reference:
+    type: string
+    description: "SSH-Host (z.B. myubuntu), Pfad zu settings.json oder Manifest-JSON."
+    required: true
+  mode:
+    type: string
+    description: "check (nur Diff) oder apply (fehlende ergaenzen). Default check."
+    required: false
+  settings_path:
+    type: string
+    description: "Lokale settings.json (default: ~/.claude/settings.json)."
+    required: false
+  strict:
+    type: string
+    description: "true = Voll-Spiegel: lokal aktive, in Referenz unbekannte Plugins deaktivieren. Default false (additiv)."
+    required: false
+outputs:
+  report:
+    type: string
+    description: Pfad zum Diff-Report.
+  applied:
+    type: boolean
+    description: Ob Aenderungen geschrieben wurden.
+  changes:
+    type: integer
+    description: Anzahl der Abweichungen.
+ai_rem_entity: tool_env_align

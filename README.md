@@ -187,6 +187,10 @@ registrierender Block:
 Absoluter Pfad (kein `~`), da der Hook via `/bin/sh` läuft. `settings-sync` (`mode=check`)
 meldet das fehlende `UserPromptSubmit`-Event fortlaufend, bis registriert.
 
+Zum Angleichen **zweier Systeme** (Plugins + Marketplaces, inkl. Plugin-Hooks) dient
+`env-align` — `check`/`apply` gegen eine Referenz (SSH-Host oder `settings.json`),
+siehe `scripts/env-align/README.md`.
+
 ## MCP-Katalog (Plugin-Marketplace)
 
 Dieses Repo ist zusätzlich ein nativer **Claude-Code-Plugin-Marketplace** — ein Katalog
