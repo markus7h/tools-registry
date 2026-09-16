@@ -21,6 +21,7 @@ leerem Prompt, kein Treffer. Niemals exit != 0, damit ein defekter Hook den
 Prompt nicht blockt.
 """
 
+import hashlib
 import json
 import os
 import sys
@@ -29,6 +30,8 @@ import urllib.request
 
 TIMEOUT = 3.0
 MAX_HITS = 5
+SUMMARY_LEN = 120
+ROUTINES_EVERY = 10
 HOME = os.path.expanduser("~")
 CLAUDE_JSON = os.path.join(HOME, ".claude.json")
 CONTEXT_MAP = os.path.join(HOME, ".claude", "context-map.json")
@@ -96,6 +99,30 @@ def _resolve_context(cwd: str) -> tuple[str, bool]:
     return "private", False
 
 
+def _routines_due(session_id: str) -> bool:
+    """Routines beim ersten Prompt einer Session ausgeben, danach alle
+    ROUTINES_EVERY Prompts erneut, damit sie in langen Sessions nicht wegrutschen.
+
+    Ohne session_id oder bei Schreibfehler: True -- lieber redundant als regelfrei.
+    """
+    if not session_id:
+        return True
+    key = hashlib.sha256(session_id.encode()).hexdigest()[:32]
+    d = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), f"claude-routines.{os.getuid()}")
+    f = os.path.join(d, key)
+    try:
+        n = int(open(f).read().strip()) + 1
+    except Exception:
+        n = 0
+    try:
+        os.makedirs(d, mode=0o700, exist_ok=True)
+        with open(f, "w") as fh:
+            fh.write(str(n))
+    except OSError:
+        return True
+    return n % ROUTINES_EVERY == 0
+
+
 def discover(url: str, auth: str, prompt: str, context: str) -> dict:
     body = json.dumps({"prompt": prompt, "context": context, "max_hits": MAX_HITS}).encode()
     headers = {"Content-Type": "application/json"}
@@ -146,7 +173,7 @@ def main() -> None:
             "angenommen. Vor kontext-abhängigen Defaults (Design, Git-Account, "
             "Deploy-Ziel) bestätigen.</context-uncertain>")
 
-    if routines:
+    if routines and _routines_due(payload.get("session_id") or ""):
         lines.append("<routines>")
         lines.append(f"Immer geltende Regeln (ai-rem, Kontext: {context}):")
         for r in routines:
@@ -159,16 +186,16 @@ def main() -> None:
             f"Aus ai-rem für deine Aufgabe relevant (Keywords: {keywords}) — "
             "bevorzuge diese gegenüber Bash-/Edit-/Write-Eigenlösungen:")
         for h in playbooks[:MAX_HITS]:
-            lines.append(f"- [Playbook] **{h['name']}** — {h['summary'][:160].rstrip()}")
+            lines.append(f"- [Playbook] **{h['name']}** — {h['summary'][:SUMMARY_LEN].rstrip()}")
         for h in tools[:MAX_HITS]:
-            lines.append(f"- [Tool] **{h['name']}** — {h['summary'][:160].rstrip()}")
+            lines.append(f"- [Tool] **{h['name']}** — {h['summary'][:SUMMARY_LEN].rstrip()}")
         lines.append("</available-tools>")
 
     if knowledge:
         lines.append("<relevant-knowledge>")
         lines.append("Aus ai-rem relevant (Kontext, keine Tools):")
-        for h in knowledge:
-            lines.append(f"- [{h['type']}] **{h['name']}** — {h['summary'][:160].rstrip()}")
+        for h in knowledge[:MAX_HITS]:
+            lines.append(f"- [{h['type']}] **{h['name']}** — {h['summary'][:SUMMARY_LEN].rstrip()}")
         lines.append("</relevant-knowledge>")
 
     emit("\n".join(lines))
