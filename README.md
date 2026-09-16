@@ -147,8 +147,14 @@ Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
 schickt den Prompt an den ai-rem-`/discover`-Endpoint und injiziert dessen Antwort als
 Kontext, damit Claude passende Tools/Playbooks nutzt statt Eigenlösungen zu bauen:
 
-- **`<routines>`** — gepinnte Meta-Regeln aus ai-rem, *immer* (unabhängig vom Keyword-Match).
-- **`<available-tools>` / `<relevant-knowledge>`** — relevanz-gematchte Treffer.
+- **`<routines>`** — gepinnte Meta-Regeln aus ai-rem (unabhängig vom Keyword-Match).
+  Beim **ersten** Prompt einer Session und danach alle `ROUTINES_EVERY` (10) Prompts —
+  bei jedem Prompt waren sie ~1.800 Zeichen Wiederholung, über eine 20-Prompt-Session
+  rund 13.600 Token. Der Zähler liegt pro `session_id` in `$XDG_RUNTIME_DIR`;
+  ohne `session_id` oder bei Schreibfehler werden sie ausgegeben (lieber redundant
+  als regelfrei).
+- **`<available-tools>` / `<relevant-knowledge>`** — relevanz-gematchte Treffer,
+  je höchstens `MAX_HITS` (5) Einträge, Summaries auf `SUMMARY_LEN` (120) Zeichen gekürzt.
 - **`<active-context>` / `<context-uncertain>`** — der aufgelöste privat/work-Kontext.
 
 Endpoint + Bearer-Token werden aus `AI_REM_ENDPOINT` bzw. `~/.claude.json`
