@@ -205,7 +205,7 @@ Scope installieren lässt. Struktur getrennt vom Script-Registry-Teil:
 
 - `.claude-plugin/marketplace.json` — der Katalog (Marketplace-Name `tools-registry`).
 - `plugins/<name>/.claude-plugin/plugin.json` — ein Plugin = ein MCP-Server. Hosts, Tokens
-  und Pfade sind ausschließlich `userConfig`-Platzhalter → **keine Secrets im Repo**.
+  und Pfade sind ausschließlich `userConfig`-Platzhalter bzw. (ai-rem, mykeyvault) CLI-Wrapper → **keine Secrets im Repo**.
 
 Der Katalog ersetzt nicht die Regel „MCP minimal pro Repo": global bleibt schlank,
 projektspezifische Server werden per `--scope project` on-demand gezogen.
@@ -215,16 +215,25 @@ claude plugin marketplace add markus7h/tools-registry   # oder lokaler Pfad
 claude plugin install doc-graph@tools-registry --scope project       # ohne Secret
 ```
 
-Server mit Secret beziehen den Token zur Install-Zeit aus [mykeyvault](https://github.com/markus7h/mykeyvault)
-(`vault_write_secret` schreibt ihn in eine chmod-600-Datei, gibt nur den Pfad zurück):
+Die Plugins `ai-rem` und `mykeyvault` (ab 2.0.0) brauchen **keine Tokens im Plugin-Dialog**:
+sie starten die stdio-Wrapper der ai-rem-CLI (`ai-rem mcp-proxy`, `ai-rem vault-mcp`), die
+Geräte-Token (OS-Keychain) und Vault-Zugang (`/api/client-config`) selbst auflösen.
+Voraussetzungen: ai-rem ≥ 1.7.0 (`ai-rem install` bzw. `ai-rem update`), Geräte-Token im
+Keychain (Kopplung oder `ai-rem token --store`) und `~/.local/bin` im `PATH` (dort liegt der
+`ai-rem`-Shim; Plugin-Manifeste expandieren `~`/`${HOME}` nicht, daher `command: "ai-rem"`).
 
 ```bash
-# im Claude-Chat: vault_write_secret("<item>") -> $P
-claude plugin install ai-rem@tools-registry --scope user \
-  --config url=https://<host>/mcp --config token="$(cat "$P")"
-rm -f "$P"
+claude plugin install ai-rem@tools-registry --scope user      # ohne --config
+claude plugin install mykeyvault@tools-registry --scope user
 ```
 
+**Migration von 1.x:** alte `userConfig`-Werte (`url`, `token`, `dist`) unter `pluginConfigs`
+in `~/.claude/settings.json` löschen (der Token stand dort im Klartext) und das alte Token
+rotieren. Ein parallel von `ai-rem install` in `~/.claude.json` eingetragener
+`mcpServers.ai-rem`/`mykeyvault` dupliziert das Plugin — nur eine der beiden Varianten nutzen.
+
+Andere Server mit Secret beziehen den Token zur Install-Zeit aus [mykeyvault](https://github.com/markus7h/mykeyvault)
+(`vault_write_secret` schreibt ihn in eine chmod-600-Datei, gibt nur den Pfad zurück);
 `sensitive: true`-Felder landen im System-Keychain, nicht in `settings.json`. Neuen Server
 ergänzen: `plugins/<name>/.claude-plugin/plugin.json` anlegen + Eintrag in `marketplace.json`,
 dann `claude plugin marketplace update tools-registry`.
