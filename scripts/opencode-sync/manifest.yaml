@@ -1,0 +1,47 @@
+name: opencode_sync
+description: >
+  Installiert Plugins des tools-registry-Marketplace in opencode (das keinen
+  Plugin-Marketplace kennt): liest marketplace.json + plugin.json und schreibt die
+  mcpServers als "mcp"-Eintraege in eine opencode.json - global oder projekt-lokal
+  (target=<projekt>/opencode.json, Regel "MCP minimal pro Repo"). Werte fuer
+  ${user_config.*} kommen aus ~/.config/opencode/tools-registry.json
+  (plugins.<name>.<feld>, plus optional _environment), sonst aus den Claude-Code-
+  pluginConfigs, sonst aus dem Default. Secrets werden nie im Klartext geschrieben,
+  sondern in chmod-600-Dateien unter <ziel-dir>/secrets/ abgelegt und per {file:}
+  referenziert. ai-rem und mykeyvault verwaltet `ai-rem install`. mode=check zeigt
+  den Diff, mode=apply schreibt (mit Backup).
+exec: ./run.sh
+inputs:
+  mode:
+    type: string
+    description: "check (nur Diff anzeigen, default) oder apply (opencode.json schreiben)"
+    required: false
+  plugins:
+    type: string
+    description: "Kommaliste (z.B. paperless,paperless-ai) oder all; default: alle Plugins aus der Werte-Datei"
+    required: false
+  target:
+    type: string
+    description: "Ziel-opencode.json (default: ~/.config/opencode/opencode.json; fuer Projekt-Scope <projekt>/opencode.json)"
+    required: false
+  values_path:
+    type: string
+    description: "Werte-Datei (default: ~/.config/opencode/tools-registry.json)"
+    required: false
+  source:
+    type: string
+    description: "Marketplace-Quelle: lokaler Repo-Pfad oder Raw-URL (default: GitHub main)"
+    required: false
+requires:
+  - python3
+outputs:
+  report:
+    type: string
+    description: Pfad zum Diff-Report.
+  changed:
+    type: boolean
+    description: Ob Eintraege abweichen.
+  applied:
+    type: boolean
+    description: Ob im apply-Modus geschrieben wurde.
+ai_rem_entity: tool_opencode_sync

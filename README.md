@@ -278,6 +278,29 @@ claude plugin update tools@tools-registry      # neue Session → Skill + Server
 > `src/`-Änderung diesen Klon nachziehen, sonst driftet er still:
 > `git -C <zweit-klon> pull && npm --prefix <zweit-klon> install && npm --prefix <zweit-klon> run build`
 
+### opencode: Katalog per `opencode_sync`
+
+opencode kennt keinen Plugin-Marketplace. Das Script `opencode_sync` (`scripts/opencode-sync/`)
+übersetzt die `mcpServers` der Plugins in `mcp`-Einträge einer `opencode.json` — global
+(`~/.config/opencode/opencode.json`) oder pro Projekt (`target=<projekt>/opencode.json`).
+Hat die Ziel-Datei schon `mcp.servers` (opencode 2.x), wird dort geschrieben, sonst flach
+(von 1.x und 2.x gelesen). `ai-rem` und `mykeyvault` richtet weiterhin `ai-rem install` ein.
+
+Werte für `${user_config.*}` in `~/.config/opencode/tools-registry.json` (sonst Claude-Code-
+`pluginConfigs`, sonst Default). Geheime Felder als `{file:…}`/`{env:…}`-Referenz; ein
+Klartextwert wird in `<ziel-dir>/secrets/<plugin>.<feld>` (chmod 600) abgelegt und referenziert.
+
+```json
+{ "plugins": {
+    "paperless":    { "dist": "/pfad/paperless-mcp/dist/index.js", "url": "https://paperless",
+                      "token": "{file:~/.config/opencode/secrets/paperless.token}" },
+    "paperless-ai": { "dist": "/pfad/paperless-ai/mcp/dist/index.js",
+                      "_environment": { "NODE_EXTRA_CA_CERTS": "/pfad/caddy-root.crt" } } } }
+```
+
+Aufruf über den `tools`-MCP (`mode=check` zeigt den Diff, `mode=apply` schreibt mit Backup),
+danach opencode neu starten.
+
 ## Build
 
 ```bash
