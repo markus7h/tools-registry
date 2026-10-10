@@ -1,0 +1,38 @@
+name: smb_automount
+description: >
+  Haelt eine SMB-Freigabe automatisch eingehaengt (z.B. //markus@mystorage.lan/markus
+  unter /Volumes/markus). Installiert einen kleinen Waechter (~/.local/bin/smb-automount)
+  plus Job: macOS LaunchAgent (beim Login, alle interval Sekunden und bei Netz-/VPN-
+  Wechsel; Mount per osascript mit Zugangsdaten aus dem Schluesselbund, ohne root),
+  Linux systemd-user-Timer (Mount per gio/gvfs). Haengende Mounts werden aus- und neu
+  eingehaengt; ist der Server nicht erreichbar (unterwegs ohne VPN), passiert nichts.
+  mode=check zeigt den Zustand, mode=apply installiert/aktualisiert, mode=uninstall
+  entfernt den Job.
+exec: ./run.sh
+inputs:
+  mode:
+    type: string
+    description: "check (Zustand anzeigen, default), apply (installieren/aktualisieren) oder uninstall"
+    required: false
+  url:
+    type: string
+    description: "SMB-Freigabe smb://[user@]host/share (default: smb://markus@mystorage.lan/markus)"
+    required: false
+  interval:
+    type: integer
+    description: "Pruefintervall in Sekunden (default: 60)"
+    required: false
+requires:
+  - nc
+  - perl
+outputs:
+  report:
+    type: string
+    description: Pfad zum Report.
+  changed:
+    type: boolean
+    description: Ob Dateien/Job vom Soll abweichen (check) bzw. geaendert wurden.
+  applied:
+    type: boolean
+    description: Ob im apply/uninstall-Modus geschrieben wurde.
+ai_rem_entity: tool_smb_automount

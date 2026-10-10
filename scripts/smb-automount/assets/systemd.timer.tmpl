@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodischer Check fuer @URL@ (tools-registry smb_automount)
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=@INTERVAL@
+Unit=@LABEL@.service
+
+[Install]
+WantedBy=timers.target
