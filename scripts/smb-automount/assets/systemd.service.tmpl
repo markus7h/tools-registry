@@ -1,0 +1,6 @@
+[Unit]
+Description=SMB-Freigabe @URL@ eingehaengt halten (tools-registry smb_automount)
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash @BIN@ @URL@
