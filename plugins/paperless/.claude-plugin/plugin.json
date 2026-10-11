@@ -1,7 +1,7 @@
 {
   "name": "paperless",
   "description": "Paperless-ngx API (stdio)",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": {
     "name": "Markus"
   },
@@ -26,8 +26,11 @@
   },
   "mcpServers": {
     "paperless": {
-      "command": "node",
+      "command": "/bin/sh",
       "args": [
+        "-c",
+        "cd \"$HOME\" && exec \"$0\" \"$@\"",
+        "node",
         "${user_config.dist}"
       ],
       "env": {

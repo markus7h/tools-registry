@@ -1,14 +1,17 @@
 {
   "name": "mykeyvault",
   "description": "Bitwarden-Vault-Zugriff (stdio via ai-rem vault-mcp, keine Tokens im Plugin; setzt ai-rem ≥ 1.7 voraus)",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": {
     "name": "Markus"
   },
   "mcpServers": {
     "mykeyvault": {
-      "command": "ai-rem",
+      "command": "/bin/sh",
       "args": [
+        "-c",
+        "cd \"$HOME\" && exec \"$0\" \"$@\"",
+        "ai-rem",
         "vault-mcp"
       ]
     }
