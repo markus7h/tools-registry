@@ -1,11 +1,11 @@
 {
   "name": "tools",
   "description": "tools-registry Script-Runner (stdio) + Skill tools-registry (Tool-Katalog als Trigger)",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "author": { "name": "Markus" },
   "userConfig": {
     "registry_url": { "type": "string", "title": "TOOLS_REGISTRY_URL", "description": "URL des Registry-Servers" },
-    "token":        { "type": "string", "title": "TOOLS_REGISTRY_TOKEN", "description": "Shared-Bearer-Token für den Registry-Server" }
+    "token":        { "type": "string", "title": "TOOLS_REGISTRY_TOKEN", "description": "Shared-Bearer-Token für den Registry-Server", "sensitive": true }
   },
   "mcpServers": {
     "tools": {
