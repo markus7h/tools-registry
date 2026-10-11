@@ -1,17 +1,16 @@
 {
   "name": "tools",
   "description": "tools-registry Script-Runner (stdio) + Skill tools-registry (Tool-Katalog als Trigger)",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "author": { "name": "Markus" },
   "userConfig": {
-    "dist":         { "type": "string", "title": "index.js Pfad", "description": "Pfad zur gebauten dist/index.js des tools-registry-Clients", "default": "/home/markus/Code/tools-registry/dist/index.js" },
     "registry_url": { "type": "string", "title": "TOOLS_REGISTRY_URL", "description": "URL des Registry-Servers" },
     "token":        { "type": "string", "title": "TOOLS_REGISTRY_TOKEN", "description": "Shared-Bearer-Token für den Registry-Server" }
   },
   "mcpServers": {
     "tools": {
       "command": "/bin/sh",
-      "args": ["-c", "cd \"$HOME\" && exec \"$0\" \"$@\"", "node", "${user_config.dist}"],
+      "args": ["-c", "cd \"$HOME\" && exec \"$0\" \"$@\"", "node", "${CLAUDE_PLUGIN_ROOT}/server/index.mjs"],
       "env": { "TOOLS_REGISTRY_URL": "${user_config.registry_url}", "TOOLS_REGISTRY_TOKEN": "${user_config.token}" }
     }
   }

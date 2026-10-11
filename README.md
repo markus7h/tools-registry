@@ -106,16 +106,9 @@ HOST=my-host ./deploy-registry.sh   # tsc → scp → docker compose up -d --bui
 # Endpoint: http://<host>:3457  (/health, /registry, /registry/file)
 ```
 
-Client (MCP-Eintrag in `~/.claude.json`) auf Registry-Modus stellen:
-
-```json
-"tools": {
-  "type": "stdio",
-  "command": "node",
-  "args": ["/pfad/zu/tools-registry/dist/index.js"],
-  "env": { "TOOLS_REGISTRY_URL": "http://<host>:3457" }
-}
-```
+Client: als Plugin `tools@tools-registry` einrichten (siehe
+[Setup: tools-Server als Plugin](#setup-tools-server-als-plugin-statt-direktem-mcp-eintrag)) —
+`registry_url`/`token` setzen den Registry-Modus.
 
 ### Relevante Env-Variablen
 
@@ -253,13 +246,13 @@ mit dem Plugin.
 ### Setup: tools-Server als Plugin (statt direktem MCP-Eintrag)
 
 Der `tools`-MCP-Server läuft als Plugin `tools@tools-registry`, **nicht** als direkter
-`mcpServers`-Eintrag in `~/.claude.json` — nur so wird der Skill mitverteilt. Einrichtung
-(Marketplace vom lokalen Dev-Klon, dann ist kein Push für Updates nötig):
+`mcpServers`-Eintrag in `~/.claude.json` — nur so wird der Skill mitverteilt. Der Server
+liegt gebündelt im Plugin (`plugins/tools/server/index.mjs`, eine Datei ohne
+`node_modules`); auf dem Rechner braucht es nur `node` ≥ 20, keinen Klon und keinen Build:
 
 ```bash
-claude plugin marketplace add /pfad/zum/tools-registry-repo
+claude plugin marketplace add markus7h/tools-registry
 claude plugin install tools@tools-registry --scope user \
-  --config dist=/pfad/zur/dist/index.js \
   --config registry_url=http://<registry-host>:3457 \
   --config token=<TOOLS_REGISTRY_TOKEN>   # muss dem Server-Token entsprechen
 claude mcp remove tools -s user   # alten Direkt-Eintrag entfernen, sonst läuft der Server doppelt
@@ -273,10 +266,10 @@ git commit -am "…"
 claude plugin update tools@tools-registry      # neue Session → Skill + Server aktuell
 ```
 
-> **Zweit-Klon beachten:** Zeigt die Plugin-Config `dist` auf einen anderen Checkout als den
-> Dev-Klon (z. B. lokale Platte statt Netz-Mount), läuft der Server-Code von dort. Nach jeder
-> `src/`-Änderung diesen Klon nachziehen, sonst driftet er still:
-> `git -C <zweit-klon> pull && npm --prefix <zweit-klon> install && npm --prefix <zweit-klon> run build`
+> **Bundle mitcommitten:** Nach jeder `src/`-Änderung `npm run build` (erzeugt auch
+> `plugins/tools/server/index.mjs`), Bundle committen und die Plugin-Version anheben —
+> sonst verteilt `claude plugin update` den alten Server-Code. Die Plugin-Config `dist`
+> aus Versionen < 1.3 ist überflüssig und kann aus `pluginConfigs` gelöscht werden.
 
 ### opencode: Katalog per `opencode_sync`
 
@@ -285,6 +278,8 @@ opencode kennt keinen Plugin-Marketplace. Das Script `opencode_sync` (`scripts/o
 (`~/.config/opencode/opencode.json`) oder pro Projekt (`target=<projekt>/opencode.json`).
 Hat die Ziel-Datei schon `mcp.servers` (opencode 2.x), wird dort geschrieben, sonst flach
 (von 1.x und 2.x gelesen). `ai-rem` und `mykeyvault` richtet weiterhin `ai-rem install` ein.
+`${CLAUDE_PLUGIN_ROOT}` (Plugin `tools`) zeigt bei lokaler `source` auf den Klon, sonst auf
+die in Claude Code installierte Plugin-Version.
 
 Werte für `${user_config.*}` in `~/.config/opencode/tools-registry.json` (sonst Claude-Code-
 `pluginConfigs`, sonst Default). Geheime Felder als `{file:…}`/`{env:…}`-Referenz; ein
@@ -305,7 +300,8 @@ danach opencode neu starten.
 
 ```bash
 npm install
-npm run build      # tsc → dist/  (Entrypoints: dist/index.js, dist/registry-server.js)
+npm run build      # tsc → dist/ (dist/index.js, dist/registry-server.js)
+                   # + esbuild → plugins/tools/server/index.mjs (Plugin-Bundle, wird committet)
 ```
 
 ## Verwandte Projekte
