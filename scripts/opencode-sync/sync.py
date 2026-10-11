@@ -28,6 +28,7 @@ MANAGED_ELSEWHERE = {"ai-rem": "ai-rem install", "mykeyvault": "ai-rem install"}
 SECRET_NAME = re.compile(r"token|secret|password|passwd|api_?key", re.I)
 PLACEHOLDER = re.compile(r"\$\{user_config\.([A-Za-z0-9_]+)\}")
 REFERENCE = re.compile(r"^\{(file|env):.+\}$")
+PLUGIN_ROOT = "${CLAUDE_PLUGIN_ROOT}"
 
 
 def read_source(source, rel):
@@ -67,6 +68,18 @@ def secret_ref(secrets_dir, plugin, field, value, apply):
     return "{file:" + path + "}"
 
 
+def plugin_root(name, source, rel):
+    """Verzeichnis fuer ${CLAUDE_PLUGIN_ROOT}: lokaler Marketplace-Klon, sonst die von
+    Claude Code installierte Plugin-Version (opencode kann nichts aus einer URL starten)."""
+    if not re.match(r"^https?://", source):
+        return os.path.join(os.path.expanduser(source), rel)
+    installed = load_json(os.path.expanduser("~/.claude/plugins/installed_plugins.json"), {})
+    for inst in installed.get("plugins", {}).get(f"{name}@{MARKETPLACE}", []):
+        if os.path.isdir(inst.get("installPath", "")):
+            return inst["installPath"]
+    return None
+
+
 def resolve_values(name, manifest, user_values, secrets_dir, apply, notes):
     claude = claude_plugin_values(name)
     resolved, missing = {}, []
@@ -90,8 +103,13 @@ def resolve_values(name, manifest, user_values, secrets_dir, apply, notes):
     return resolved, missing
 
 
-def substitute(obj, values):
+def substitute(obj, values, root=None):
     if isinstance(obj, str):
+        if PLUGIN_ROOT in obj:
+            if root is None:
+                raise ValueError("${CLAUDE_PLUGIN_ROOT} unbekannt — Plugin erst in Claude Code installieren "
+                                 "oder source=<lokaler Klon> angeben")
+            obj = obj.replace(PLUGIN_ROOT, root)
         unknown = [m for m in PLACEHOLDER.findall(obj) if m not in values]
         if unknown:
             raise KeyError(unknown[0])
@@ -99,9 +117,9 @@ def substitute(obj, values):
             raise ValueError(f"nicht unterstuetzter Platzhalter in {obj!r}")
         return PLACEHOLDER.sub(lambda m: values[m.group(1)], obj)
     if isinstance(obj, list):
-        return [substitute(x, values) for x in obj]
+        return [substitute(x, values, root) for x in obj]
     if isinstance(obj, dict):
-        return {k: substitute(v, values) for k, v in obj.items()}
+        return {k: substitute(v, values, root) for k, v in obj.items()}
     return obj
 
 
@@ -181,7 +199,9 @@ def main():
         if name in MANAGED_ELSEWHERE and a.plugins.strip() != name:
             skipped.append(f"{name}: wird von `{MANAGED_ELSEWHERE[name]}` verwaltet")
             continue
-        manifest = read_source(a.source, f"{catalog[name]['source'].lstrip('./')}/.claude-plugin/plugin.json")
+        rel = catalog[name]["source"].lstrip("./")
+        manifest = read_source(a.source, f"{rel}/.claude-plugin/plugin.json")
+        root = plugin_root(name, a.source, rel)
         user_values = dict(values_cfg.get(name, {}))
         extra_env = user_values.pop("_environment", {})
         values, missing = resolve_values(name, manifest, user_values, secrets_dir, apply, notes)
@@ -190,7 +210,7 @@ def main():
             continue
         for server_name, server in (manifest.get("mcpServers") or {}).items():
             try:
-                entry = to_opencode(substitute(server, values), extra_env)
+                entry = to_opencode(substitute(server, values, root), extra_env)
             except (KeyError, ValueError) as e:
                 skipped.append(f"{name}: {e}")
                 continue
