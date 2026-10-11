@@ -1,14 +1,17 @@
 {
   "name": "ai-rem",
   "description": "Knowledge-Graph-Memory (stdio-Proxy, Token im OS-Keychain; setzt ai-rem ≥ 1.7 voraus)",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": {
     "name": "Markus"
   },
   "mcpServers": {
     "ai-rem": {
-      "command": "ai-rem",
+      "command": "/bin/sh",
       "args": [
+        "-c",
+        "cd \"$HOME\" && exec \"$0\" \"$@\"",
+        "ai-rem",
         "mcp-proxy"
       ]
     }
