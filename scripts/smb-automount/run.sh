@@ -10,7 +10,7 @@ ASSETS="$(cd "$(dirname "$0")" && pwd)/assets"
 REPORT="${TOOLS_RUN_DIR}/report.txt"
 OS="$(uname)"
 
-case "$MODE" in check|apply|uninstall) ;; *) echo "ERROR: mode muss check, apply oder uninstall sein" >&2; exit 2 ;; esac
+case "$MODE" in check|apply|uninstall|reconnect) ;; *) echo "ERROR: mode muss check, apply, uninstall oder reconnect sein" >&2; exit 2 ;; esac
 case "$URL" in smb://*/*) ;; *) echo "ERROR: url muss smb://[user@]host/share sein, nicht '$URL'" >&2; exit 2 ;; esac
 case "$INTERVAL" in ''|*[!0-9]*) echo "ERROR: interval muss eine Zahl (Sekunden) sein" >&2; exit 2 ;; esac
 [[ "$OS" == "Darwin" || "$OS" == "Linux" ]] || { echo "ERROR: nur macOS und Linux unterstuetzt ($OS)" >&2; exit 2; }
@@ -63,7 +63,19 @@ compare() {
   rm -f "$tmp"
 }
 
-if [[ "$MODE" == "uninstall" ]]; then
+if [[ "$MODE" == "reconnect" ]]; then
+  # Waechter einmal sofort laufen lassen statt auf den naechsten Job-Lauf zu warten.
+  # Installiertes Script bevorzugen, sonst das mitgelieferte; hart begrenzt, damit ein
+  # haengender Mount den Tool-Aufruf nicht blockiert.
+  watcher="$BIN"; [[ -x "$watcher" ]] || watcher="$ASSETS/smb-automount.sh"
+  out="$(perl -e 'alarm shift; exec @ARGV' 45 /bin/bash "$watcher" "$URL" 2>&1)" \
+    && say "Waechter: ok" || say "Waechter: Exit $? (Timeout oder Fehler)"
+  if [[ -n "$out" ]]; then
+    say "$out"
+    [[ "$OS" == "Darwin" ]] && { mkdir -p "$(dirname "$LOG")"; echo "$out" >> "$LOG"; }
+  fi
+  job_loaded && say "Job:     geladen" || say "Job:     NICHT geladen (mode=apply installiert den Waechter dauerhaft)"
+elif [[ "$MODE" == "uninstall" ]]; then
   unload
   for u in "${UNITS[@]}"; do [[ -f "$u" ]] && { rm -f "$u"; say "entfernt $u"; changed=true; }; done
   [[ "$OS" == "Linux" ]] && systemctl --user daemon-reload >/dev/null 2>&1 || true
@@ -93,8 +105,10 @@ else
   job_loaded && say "Job:     geladen" || { say "Job:     NICHT geladen"; changed=true; }
 fi
 
+mounted=false
 if mount 2>/dev/null | grep -qiE "@?${HOST}/${SHARE} on .*smbfs" \
    || ls -d "/run/user/$(id -u)/gvfs/smb-share:server=${HOST},share=${SHARE}"* >/dev/null 2>&1; then
+  mounted=true
   say "Mount:   eingehängt"
 else
   say "Mount:   nicht eingehängt"
@@ -105,7 +119,8 @@ cat > "${TOOLS_RUN_DIR}/outputs.json" << EOF
 {
   "report": "${REPORT}",
   "changed": ${changed},
-  "applied": ${applied}
+  "applied": ${applied},
+  "mounted": ${mounted}
 }
 EOF
 
