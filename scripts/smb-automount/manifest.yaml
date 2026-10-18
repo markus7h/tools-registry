@@ -7,12 +7,14 @@ description: >
   Linux systemd-user-Timer (Mount per gio/gvfs). Haengende Mounts werden aus- und neu
   eingehaengt; ist der Server nicht erreichbar (unterwegs ohne VPN), passiert nichts.
   mode=check zeigt den Zustand, mode=apply installiert/aktualisiert, mode=uninstall
-  entfernt den Job.
+  entfernt den Job. mode=reconnect haengt sofort (neu) ein — aufrufen, wenn
+  /Volumes/markus haengt oder fehlt (z.B. "Operation timed out", "Resource busy",
+  "No such file or directory" unter /Volumes/markus).
 exec: ./run.sh
 inputs:
   mode:
     type: string
-    description: "check (Zustand anzeigen, default), apply (installieren/aktualisieren) oder uninstall"
+    description: "check (Zustand anzeigen, default), apply (installieren/aktualisieren), uninstall oder reconnect (sofort neu einhaengen)"
     required: false
   url:
     type: string
@@ -35,4 +37,7 @@ outputs:
   applied:
     type: boolean
     description: Ob im apply/uninstall-Modus geschrieben wurde.
+  mounted:
+    type: boolean
+    description: Ob die Freigabe nach dem Lauf eingehaengt ist.
 ai_rem_entity: tool_smb_automount
