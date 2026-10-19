@@ -205,7 +205,7 @@ projektspezifische Server werden per `--scope project` on-demand gezogen.
 
 ```bash
 claude plugin marketplace add markus7h/tools-registry   # oder lokaler Pfad
-claude plugin install doc-graph@tools-registry --scope project       # ohne Secret
+claude plugin install doc-graph@tools-registry --scope project       # Token via ai-rem svc pair
 ```
 
 Die Plugins `ai-rem` und `mykeyvault` (ab 2.0.0) brauchen **keine Tokens im Plugin-Dialog**:
@@ -219,6 +219,17 @@ Keychain (Kopplung oder `ai-rem token --store`) und `~/.local/bin` im `PATH` (do
 claude plugin install ai-rem@tools-registry --scope user      # ohne --config
 claude plugin install mykeyvault@tools-registry --scope user
 ```
+
+`doc-graph` und `case-assist` (ab 2.0.0) laufen genauso über die CLI: `ai-rem svc proxy <name>`
+liest den Token des Dienstes aus dem Keychain (Konto `svc-<name>`). Voraussetzung ist ai-rem
+≥ 1.12.0; einmalig pro Gerät koppeln:
+
+```bash
+ai-rem svc pair doc-graph --url https://docgraph.lan        # Freigabe im Browser
+ai-rem svc pair case-assist --url https://case-assist.lan
+```
+
+`userConfig.url` ist die https-Basis ohne `/mcp`.
 
 **Migration von 1.x:** alte `userConfig`-Werte (`url`, `token`, `dist`) unter `pluginConfigs`
 in `~/.claude/settings.json` löschen (der Token stand dort im Klartext) und das alte Token

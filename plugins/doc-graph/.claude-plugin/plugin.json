@@ -1,12 +1,31 @@
 {
   "name": "doc-graph",
-  "description": "Doc-Graph — Paperless-Dokumentgraph (HTTP)",
-  "version": "1.0.1",
-  "author": { "name": "Markus" },
+  "description": "Doc-Graph — Paperless-Dokumentgraph (stdio-Proxy, Token im OS-Keychain; ai-rem ≥ 1.12, vorher `ai-rem svc pair doc-graph`)",
+  "version": "2.0.0",
+  "author": {
+    "name": "Markus"
+  },
   "userConfig": {
-    "url": { "type": "string", "title": "doc-graph URL", "description": "URL des doc-graph MCP-Servers", "default": "http://mystorage:5775/mcp" }
+    "url": {
+      "type": "string",
+      "title": "doc-graph URL",
+      "description": "Basis-URL des doc-graph-Servers (https, ohne /mcp)",
+      "default": "https://docgraph.lan"
+    }
   },
   "mcpServers": {
-    "doc-graph": { "type": "http", "url": "${user_config.url}" }
+    "doc-graph": {
+      "command": "/bin/sh",
+      "args": [
+        "-c",
+        "cd \"$HOME\" && exec \"$0\" \"$@\"",
+        "ai-rem",
+        "svc",
+        "proxy",
+        "doc-graph",
+        "--url",
+        "${user_config.url}"
+      ]
+    }
   }
 }
