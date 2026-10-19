@@ -3,8 +3,8 @@
   "owner": { "name": "Markus" },
   "plugins": [
     { "name": "ai-rem",       "source": "./plugins/ai-rem",       "description": "Knowledge-Graph-Memory (stdio-Proxy, Token im OS-Keychain; ai-rem ≥ 1.7)" },
-    { "name": "case-assist",  "source": "./plugins/case-assist",  "description": "Subsumtionsassistenz (HTTP)" },
-    { "name": "doc-graph",    "source": "./plugins/doc-graph",    "description": "Doc-Graph (HTTP)" },
+    { "name": "case-assist",  "source": "./plugins/case-assist",  "description": "Subsumtionsassistenz (stdio-Proxy, Token im OS-Keychain; ai-rem ≥ 1.12)" },
+    { "name": "doc-graph",    "source": "./plugins/doc-graph",    "description": "Doc-Graph (stdio-Proxy, Token im OS-Keychain; ai-rem ≥ 1.12)" },
     { "name": "tools",        "source": "./plugins/tools",        "description": "tools-registry Script-Runner (stdio)" },
     { "name": "mykeyvault",   "source": "./plugins/mykeyvault",   "description": "Bitwarden-Vault-Zugriff (stdio via ai-rem vault-mcp; ai-rem ≥ 1.7)" },
     { "name": "paperless",    "source": "./plugins/paperless",    "description": "Paperless-ngx API (stdio)" },

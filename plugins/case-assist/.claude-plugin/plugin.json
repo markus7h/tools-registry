@@ -1,12 +1,31 @@
 {
   "name": "case-assist",
-  "description": "case-assist — fallgetriebene Subsumtionsassistenz (HTTP). Server ruft nie ein LLM: Client extrahiert selbst (extraction_prompt → submit_case).",
-  "version": "1.0.1",
-  "author": { "name": "Markus" },
+  "description": "case-assist — fallgetriebene Subsumtionsassistenz (stdio-Proxy, Token im OS-Keychain; ai-rem ≥ 1.12, vorher `ai-rem svc pair case-assist`). Server ruft nie ein LLM: Client extrahiert selbst (extraction_prompt → submit_case).",
+  "version": "2.0.0",
+  "author": {
+    "name": "Markus"
+  },
   "userConfig": {
-    "url": { "type": "string", "title": "case-assist URL", "description": "URL des case-assist MCP-Servers", "default": "https://case-assist.lan/mcp" }
+    "url": {
+      "type": "string",
+      "title": "case-assist URL",
+      "description": "Basis-URL des case-assist-Servers (https, ohne /mcp)",
+      "default": "https://case-assist.lan"
+    }
   },
   "mcpServers": {
-    "case-assist": { "type": "http", "url": "${user_config.url}" }
+    "case-assist": {
+      "command": "/bin/sh",
+      "args": [
+        "-c",
+        "cd \"$HOME\" && exec \"$0\" \"$@\"",
+        "ai-rem",
+        "svc",
+        "proxy",
+        "case-assist",
+        "--url",
+        "${user_config.url}"
+      ]
+    }
   }
 }
