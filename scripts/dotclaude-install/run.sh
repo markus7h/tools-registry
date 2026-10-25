@@ -86,7 +86,7 @@ AKTION ERFORDERLICH: tool-discovery-Hook ist deployt, aber noch NICHT in
 settings.json registriert. Diesen Block unter hooks.UserPromptSubmit einfuegen:
 
   { "matcher": "", "hooks": [ { "type": "command",
-    "command": "${HOOKS_DST}/tool-discovery.sh", "timeout": 10000 } ] }
+    "command": "${HOOKS_DST}/tool-discovery.sh", "timeout": 10 } ] }
 
 Pruefen mit:  settings-sync (mode=check)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
