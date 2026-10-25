@@ -180,7 +180,7 @@ registrierender Block:
 
 ```json
 { "matcher": "", "hooks": [ { "type": "command",
-  "command": "/Users/<user>/.claude/hooks/tool-discovery.sh", "timeout": 10000 } ] }
+  "command": "/Users/<user>/.claude/hooks/tool-discovery.sh", "timeout": 10 } ] }
 ```
 
 Absoluter Pfad (kein `~`), da der Hook via `/bin/sh` läuft. `settings-sync` (`mode=check`)
