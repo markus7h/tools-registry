@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { McpServer, type RegisteredTool } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { z } from "zod";
@@ -22,14 +22,16 @@ const CACHE_DIR = registryCacheDir();
 const SOURCE_DIR = REGISTRY_URL ? CACHE_DIR : LOCAL_SCRIPTS_DIR;
 const POLL_MS = Number(process.env.TOOLS_POLL_MS ?? 5000);
 
-const server = new McpServer({
-  name: "tools-registry",
-  version: "0.1.0",
-});
+const newServer = () =>
+  new McpServer({
+    name: "tools-registry",
+    version: "0.1.0",
+  });
+let server = newServer();
 
 // Laufzeit-Registry: Name -> Script + zugehöriges SDK-Tool-Handle (für remove/update).
 const scriptsByName = new Map<string, LoadedScript>();
-type ToolHandle = ReturnType<typeof server.tool>;
+type ToolHandle = RegisteredTool;
 const handlesByName = new Map<string, ToolHandle>();
 
 const RESERVED = new Set(["list_scripts", "pipeline_run"]);
@@ -47,10 +49,9 @@ function registerScript(script: LoadedScript): void {
   const shape = inputsToZodShape(manifest.inputs ?? {});
   shape.run_id = z.string().optional().describe("Existing run_id to chain steps; new one is created if omitted.");
 
-  const handle = server.tool(
+  const handle = server.registerTool(
     manifest.name,
-    manifest.description,
-    shape,
+    { description: manifest.description, inputSchema: z.object(shape) },
     async (args: Record<string, unknown>) => {
       const { run_id: runIdArg, ...inputs } = args;
       const run = await ensureRun(typeof runIdArg === "string" ? runIdArg : undefined);
@@ -137,10 +138,10 @@ try {
 }
 
 // ── Meta-Tools ───────────────────────────────────────────────────────────────
-server.tool(
+function registerMetaTools(): void {
+server.registerTool(
   "list_scripts",
-  "Listet alle aktuell registrierten Scripts mit Manifest-Eckdaten.",
-  {},
+  { description: "Listet alle aktuell registrierten Scripts mit Manifest-Eckdaten.", inputSchema: z.object({}) },
   async () => {
     const summary = [...scriptsByName.values()].map((s) => ({
       name: s.manifest.name,
@@ -154,10 +155,9 @@ server.tool(
   }
 );
 
-server.tool(
+server.registerTool(
   "pipeline_run",
-  "Führt eine Sequenz von Script-Aufrufen aus. Variable ${name} im inputs eines Schritts wird aus outputs_as eines vorigen Schritts gefüllt. Zwischen-Artefakte bleiben als Dateien im run_dir und kommen nicht zurück.",
-  {
+  { description: "Führt eine Sequenz von Script-Aufrufen aus. Variable ${name} im inputs eines Schritts wird aus outputs_as eines vorigen Schritts gefüllt. Zwischen-Artefakte bleiben als Dateien im run_dir und kommen nicht zurück.", inputSchema: z.object({
     run_id: z.string().optional().describe("Optional: existierende run_id wiederverwenden."),
     steps: z
       .array(
@@ -172,7 +172,7 @@ server.tool(
       )
       .min(1)
       .describe("Pipeline-Schritte in Ausführungsreihenfolge."),
-  },
+  }) },
   async (args) => {
     const spec: PipelineSpec = args as PipelineSpec;
     const result = await runPipeline(spec, scriptsByName);
@@ -183,8 +183,18 @@ server.tool(
   }
 );
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+}
+
+// serveStdio bedient Spec 2026-07-28 (server/discover, _meta pro Request) und Legacy-initialize.
+// Die Factory kann pro Verbindung mehrfach laufen (verworfene discover-Probe → Legacy-Fallback),
+// daher jedes Mal eine frische Instanz mit dem aktuellen Tool-Stand.
+serveStdio(() => {
+  server = newServer();
+  handlesByName.clear();
+  for (const s of [...scriptsByName.values()]) registerScript(s);
+  registerMetaTools();
+  return server;
+});
 
 // ── Live-Reload: Poll-Loop (SMB-tauglich, ersetzt fs.watch) ───────────────────
 // Holt periodisch frischen Stand und gleicht die Tool-Liste live ab.
