@@ -108,14 +108,14 @@ HOST=my-host ./deploy-registry.sh   # tsc → scp → docker compose up -d --bui
 
 Client: als Plugin `tools@tools-registry` einrichten (siehe
 [Setup: tools-Server als Plugin](#setup-tools-server-als-plugin-statt-direktem-mcp-eintrag)) —
-`registry_url`/`token` setzen den Registry-Modus.
+`registry_url` setzt den Registry-Modus, das Token kommt zur Laufzeit über `ai-rem run`.
 
 ### Relevante Env-Variablen
 
 | Variable | Wirkung |
 |---|---|
 | `TOOLS_REGISTRY_URL` | aktiviert den Registry-Client (Katalog-Quelle). Ungesetzt → lokales `scripts/`. |
-| `TOOLS_REGISTRY_TOKEN` | Shared Bearer-Token. Server: gesetzt → alle Endpoints außer `/health` verlangen `Authorization: Bearer <token>`. Client: schickt es mit. |
+| `TOOLS_REGISTRY_TOKEN` | Shared Bearer-Token. Server: gesetzt → alle Endpoints außer `/health` verlangen `Authorization: Bearer <token>`. Client: schickt es mit (Plugin: `ai-rem run` setzt es aus dem Vault-Item „tools-registry api token“). |
 | `TOOLS_SCRIPTS_DIR` | lokales Script-Verzeichnis (Dev-Fallback / Quelle des Registry-Servers). |
 | `TOOLS_CACHE_DIR` | lokaler Cache (Default `~/.cache/tools-registry/scripts`). |
 | `TOOLS_SCRIPT_ENV_PASSTHROUGH` | Komma-Liste zusätzlicher Env-Vars an Scripts (Default-Whitelist: `PATH, HOME, LANG, LC_*, TMPDIR, TERM, TZ, USER, SHELL`). |
@@ -236,9 +236,14 @@ in `~/.claude/settings.json` löschen (der Token stand dort im Klartext) und das
 rotieren. Ein parallel von `ai-rem install` in `~/.claude.json` eingetragener
 `mcpServers.ai-rem`/`mykeyvault` dupliziert das Plugin — nur eine der beiden Varianten nutzen.
 
-Andere Server mit Secret beziehen den Token zur Install-Zeit aus [mykeyvault](https://github.com/markus7h/mykeyvault)
-(`vault_write_secret` schreibt ihn in eine chmod-600-Datei, gibt nur den Pfad zurück);
-`sensitive: true`-Felder landen im System-Keychain, nicht in `settings.json`. Neuen Server
+`tools` (ab 1.5.0) und `paperless` (ab 1.2.0) halten ihr Secret ebenfalls nicht mehr im
+Plugin-Dialog: `ai-rem run --secret "<vault-item>=<ENV>" -- node …` holt es bei jedem Start aus
+[mykeyvault](https://github.com/markus7h/mykeyvault) (Items „tools-registry api token“ bzw.
+„paperless-token“, Namen stehen fest im Manifest) und startet den lokalen Server damit. Ohne
+Vault-Zugang startet der Server nicht (CONNECTION_CLOSED, Grund im MCP-Log) statt still ohne
+Token zu laufen. Voraussetzungen: ai-rem-Client mit `run` (ab dem nächsten ai-rem-Release;
+`ai-rem update`) und ein **Admin**-Geräte-Token, denn nur das bekommt Vault-Zugang über
+`/api/client-config`. Neuen Server
 ergänzen: `plugins/<name>/.claude-plugin/plugin.json` anlegen + Eintrag in `marketplace.json`,
 dann `claude plugin marketplace update tools-registry`.
 
@@ -264,8 +269,7 @@ liegt gebündelt im Plugin (`plugins/tools/server/index.mjs`, eine Datei ohne
 ```bash
 claude plugin marketplace add markus7h/tools-registry
 claude plugin install tools@tools-registry --scope user \
-  --config registry_url=http://<registry-host>:3457 \
-  --config token=<TOOLS_REGISTRY_TOKEN>   # muss dem Server-Token entsprechen
+  --config registry_url=http://<registry-host>:3457   # Token kommt per ai-rem run aus mykeyvault
 claude mcp remove tools -s user   # alten Direkt-Eintrag entfernen, sonst läuft der Server doppelt
 ```
 
@@ -280,7 +284,8 @@ claude plugin update tools@tools-registry      # neue Session → Skill + Server
 > **Bundle mitcommitten:** Nach jeder `src/`-Änderung `npm run build` (erzeugt auch
 > `plugins/tools/server/index.mjs`), Bundle committen und die Plugin-Version anheben —
 > sonst verteilt `claude plugin update` den alten Server-Code. Die Plugin-Config `dist`
-> aus Versionen < 1.3 ist überflüssig und kann aus `pluginConfigs` gelöscht werden.
+> aus Versionen < 1.3 und `token` aus Versionen < 1.5 sind überflüssig und können aus
+> `pluginConfigs` gelöscht werden (der alte `sensitive`-Wert bleibt verwaist im Keychain).
 
 ### opencode: Katalog per `opencode_sync`
 
@@ -298,8 +303,7 @@ Klartextwert wird in `<ziel-dir>/secrets/<plugin>.<feld>` (chmod 600) abgelegt u
 
 ```json
 { "plugins": {
-    "paperless":    { "dist": "/pfad/paperless-mcp/dist/index.js", "url": "https://paperless",
-                      "token": "{file:~/.config/opencode/secrets/paperless.token}" },
+    "paperless":    { "dist": "/pfad/paperless-mcp/dist/index.js", "url": "https://paperless" },
     "paperless-ai": { "dist": "/pfad/paperless-ai/mcp/dist/index.js",
                       "_environment": { "NODE_EXTRA_CA_CERTS": "/pfad/caddy-root.crt" } } } }
 ```

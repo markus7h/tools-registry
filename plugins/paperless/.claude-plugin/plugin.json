@@ -1,7 +1,7 @@
 {
   "name": "paperless",
-  "description": "Paperless-ngx API (stdio)",
-  "version": "1.1.2",
+  "description": "Paperless-ngx API (stdio, Secret über ai-rem run aus mykeyvault)",
+  "version": "1.2.0",
   "author": {
     "name": "Markus"
   },
@@ -16,12 +16,6 @@
       "type": "string",
       "title": "PAPERLESS_URL",
       "description": "z.B. https://paperless"
-    },
-    "token": {
-      "type": "string",
-      "title": "PAPERLESS_TOKEN",
-      "description": "API-Token aus Paperless-ngx (Einstellungen → Benutzer → Token)",
-      "sensitive": true
     }
   },
   "mcpServers": {
@@ -30,12 +24,16 @@
       "args": [
         "-c",
         "cd \"$HOME\" && exec \"$0\" \"$@\"",
+        "ai-rem",
+        "run",
+        "--secret",
+        "paperless-token=PAPERLESS_TOKEN",
+        "--",
         "node",
         "${user_config.dist}"
       ],
       "env": {
-        "PAPERLESS_URL": "${user_config.url}",
-        "PAPERLESS_TOKEN": "${user_config.token}"
+        "PAPERLESS_URL": "${user_config.url}"
       }
     }
   }
