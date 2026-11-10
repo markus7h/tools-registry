@@ -1,17 +1,16 @@
 {
   "name": "tools",
-  "description": "tools-registry Script-Runner (stdio) + Skill tools-registry (Tool-Katalog als Trigger)",
-  "version": "1.4.0",
+  "description": "tools-registry Script-Runner (stdio, Secret über ai-rem run aus mykeyvault) + Skill tools-registry (Tool-Katalog als Trigger)",
+  "version": "1.5.0",
   "author": { "name": "Markus" },
   "userConfig": {
-    "registry_url": { "type": "string", "title": "TOOLS_REGISTRY_URL", "description": "URL des Registry-Servers" },
-    "token":        { "type": "string", "title": "TOOLS_REGISTRY_TOKEN", "description": "Shared-Bearer-Token für den Registry-Server", "sensitive": true }
+    "registry_url": { "type": "string", "title": "TOOLS_REGISTRY_URL", "description": "URL des Registry-Servers" }
   },
   "mcpServers": {
     "tools": {
       "command": "/bin/sh",
-      "args": ["-c", "cd \"$HOME\" && exec \"$0\" \"$@\"", "node", "${CLAUDE_PLUGIN_ROOT}/server/index.mjs"],
-      "env": { "TOOLS_REGISTRY_URL": "${user_config.registry_url}", "TOOLS_REGISTRY_TOKEN": "${user_config.token}" }
+      "args": ["-c", "cd \"$HOME\" && exec \"$0\" \"$@\"", "ai-rem", "run", "--secret", "tools-registry api token=TOOLS_REGISTRY_TOKEN", "--", "node", "${CLAUDE_PLUGIN_ROOT}/server/index.mjs"],
+      "env": { "TOOLS_REGISTRY_URL": "${user_config.registry_url}" }
     }
   }
 }
