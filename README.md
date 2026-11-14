@@ -311,6 +311,26 @@ Klartextwert wird in `<ziel-dir>/secrets/<plugin>.<feld>` (chmod 600) abgelegt u
 Aufruf über den `tools`-MCP (`mode=check` zeigt den Diff, `mode=apply` schreibt mit Backup),
 danach opencode neu starten.
 
+### opencode: LiteLLM-Gateway per `opencode_local_ai`
+
+`opencode_local_ai` (`scripts/opencode-local-ai/`) trägt das LiteLLM-Gateway
+`http://mystorage.lan:11437/v1` als Provider `litellm` in eine `opencode.json` ein
+(`@ai-sdk/openai-compatible`) — mit den vier Modellen, die der opencode-Virtual-Key freigibt:
+`private-general`, `private-coder`, `cloud-general`, `cloud-coder`. Andere Modelle unter
+`provider.litellm` bleiben stehen. `set_default=true` setzt zusätzlich `"model": "litellm/<model>"`
+(Default `private-general`).
+
+Den Key holt `run.sh` per `ai-rem run --secret "litellm opencode key=OPENCODE_LITELLM_KEY"` aus
+mykeyvault (Item-Name über `vault_item` änderbar) und legt ihn in
+`<ziel-dir>/secrets/litellm-api-key` (chmod 600) ab — die Config referenziert ihn nur per
+`{file:…}`. Bewusst ein eigener Env-Name: ein `LITELLM_API_KEY` aus der Shell ist meist ein
+anderer Key und würde sonst den Vault-Abruf überspringen. Am Ende prüft das Script
+Erreichbarkeit und Key gegen `/v1/models` (`key_status`). Ohne Vault-Zugriff wird eine schon
+vorhandene Secret-Datei weiterverwendet.
+
+Danach `opencode service restart` (falls der Hintergrund-Dienst läuft) und in opencode
+`/models` → `litellm/…`.
+
 ## Build
 
 ```bash

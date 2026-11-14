@@ -1,0 +1,55 @@
+name: opencode_local_ai
+description: >
+  Richtet das LiteLLM-Gateway auf mystorage als Modell-Provider `litellm` in
+  opencode ein, mit den vier Modellen, die der opencode-Key freigibt
+  (private-general, private-coder, cloud-general, cloud-coder). Schreibt
+  provider.litellm (@ai-sdk/openai-compatible) in die opencode.json; andere
+  Modelle dort bleiben erhalten. Der API-Key steht nie im Klartext, sondern in
+  <ziel-dir>/secrets/litellm-api-key (chmod 600) und wird per {file:}
+  referenziert. Der Key kommt aus mykeyvault (Vault-Item "litellm opencode key"
+  via `ai-rem run --secret`), sonst aus einer schon vorhandenen Secret-Datei;
+  ein LITELLM_API_KEY aus der Shell wird bewusst ignoriert. Prueft am Ende
+  Erreichbarkeit und Key gegen /v1/models. mode=check zeigt den Diff,
+  mode=apply schreibt (mit Backup).
+exec: ./run.sh
+inputs:
+  mode:
+    type: string
+    description: "check (nur Diff anzeigen, default) oder apply (opencode.json schreiben)"
+    required: false
+  set_default:
+    type: boolean
+    description: "true = litellm/<model> zusaetzlich als Standardmodell (\"model\") setzen; default false"
+    required: false
+  target:
+    type: string
+    description: "Ziel-opencode.json (default: ~/.config/opencode/opencode.json)"
+    required: false
+  base_url:
+    type: string
+    description: "LiteLLM-Basis-URL (default: http://mystorage.lan:11437/v1)"
+    required: false
+  model:
+    type: string
+    description: "Standardmodell fuer set_default: private-general (default), private-coder, cloud-general oder cloud-coder"
+    required: false
+  vault_item:
+    type: string
+    description: "mykeyvault-Item mit dem LiteLLM-Key (default: litellm opencode key)"
+    required: false
+requires:
+  - python3
+outputs:
+  report:
+    type: string
+    description: Pfad zum Diff-Report.
+  changed:
+    type: boolean
+    description: Ob die Config abweicht (check) bzw. geschrieben wurde (apply).
+  applied:
+    type: boolean
+    description: Ob im apply-Modus geschrieben wurde.
+  key_status:
+    type: string
+    description: "ok | rejected | missing | unreachable | unknown"
+ai_rem_entity: tool_opencode_local_ai
